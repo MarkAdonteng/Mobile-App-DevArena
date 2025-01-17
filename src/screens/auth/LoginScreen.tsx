@@ -32,16 +32,21 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      const userData = await signIn(email, password);
-      setUser({
-        fullName: userData.fullName,
-        email: userData.email,
-        uid: userData.uid,
-        points: userData.points,
-        completedModules: userData.completedModules,
-        achievements: userData.achievements
-      });
-      navigation.replace('MainApp');
+      const userData = await signIn(
+        email.trim(), 
+        password.trim()
+      );
+      if (userData) {
+        setUser({
+          fullName: userData.fullName,
+          email: userData.email,
+          uid: userData.uid,
+          points: userData.points || 0,
+          completedModules: userData.completedModules || [],
+          achievements: userData.achievements || []
+        });
+        navigation.replace('MainApp');
+      }
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
@@ -166,6 +171,9 @@ const styles = StyleSheet.create({
   signupTextBold: {
     color: '#2196F3',
     fontWeight: 'bold',
+  },
+  loginButtonDisabled: {
+    backgroundColor: '#ccc',
   },
 });
 

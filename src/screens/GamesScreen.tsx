@@ -62,7 +62,14 @@ const GamesScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header userProgress={{ totalPoints: 0, level: 1, completedModules: [], achievements: [] }} />
+      <Header 
+        text="Games"
+        showProgress
+        userProgress={{
+          level: 1,
+          totalPoints: 0
+        }}
+      />
       <FlatList<GameItem>
         data={games}
         renderItem={renderGameItem}

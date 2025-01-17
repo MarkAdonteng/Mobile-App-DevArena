@@ -17,57 +17,52 @@ import AccountScreen from './src/screens/AccountScreen';
 import CodeRunner from './src/components/games/CodeRunner';
 import AlgorithmBattle from './src/components/games/AlgorithmBattle';
 import HelpScreen from './src/screens/HelpScreen';
+import GeneralScreen from './src/screens/GeneralScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
-const MainApp = () => (
-  <Tab.Navigator
-    screenOptions={{
-      tabBarStyle: styles.tabBar,
-      tabBarActiveTintColor: '#2196F3',
-      tabBarInactiveTintColor: '#757575',
-      headerShown: false,
-    }}
-  >
-    <Tab.Screen
-      name="Quizzes"
-      component={QuizScreen}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="quiz" size={size} color={color} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Games"
-      component={GameStack}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="games" size={size} color={color} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Videos"
-      component={VideosScreen}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="video-library" size={size} color={color} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Account"
-      component={AccountScreen}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <Icon name="person" size={size} color={color} />
-        ),
-      }}
-    />
-  </Tab.Navigator>
-);
+const MainApp = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          switch (route.name) {
+            case 'General':
+              iconName = 'home';
+              break;
+            case 'Quiz':
+              iconName = 'quiz';
+              break;
+            case 'Games':
+              iconName = 'sports-esports';
+              break;
+            case 'Videos':
+              iconName = 'ondemand-video';
+              break;
+            case 'Account':
+              iconName = 'person';
+              break;
+            default:
+              iconName = 'circle';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#2196F3',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="General" component={GeneralScreen} />
+      <Tab.Screen name="Quiz" component={QuizScreen} />
+      <Tab.Screen name="Games" component={GamesScreen} />
+      <Tab.Screen name="Videos" component={VideosScreen} />
+      <Tab.Screen name="Account" component={AccountScreen} />
+    </Tab.Navigator>
+  );
+};
 
 const GameStack = () => (
   <Stack.Navigator>

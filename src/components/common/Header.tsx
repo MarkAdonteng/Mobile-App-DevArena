@@ -1,18 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { UserProgress } from '../../types';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-type HeaderProps = {
-  userProgress: UserProgress;
+export type HeaderProps = {
+  text?: string;
+  showBack?: boolean;
+  onBack?: () => void;
+  showProgress?: boolean;
+  userProgress?: {
+    level: number;
+    totalPoints: number;
+  };
 };
 
-export const Header: React.FC<HeaderProps> = ({ userProgress }) => (
+export const Header: React.FC<HeaderProps> = ({ 
+  text = 'AIT Learning Hub',
+  showBack,
+  onBack,
+  showProgress = false,
+  userProgress = { level: 1, totalPoints: 0 }
+}) => (
   <View style={styles.header}>
-    <Text style={styles.headerTitle}>AIT Learning Hub</Text>
-    <View style={styles.userStats}>
-      <Text style={styles.levelText}>Level {userProgress.level}</Text>
-      <Text style={styles.pointsTotal}>{userProgress.totalPoints} Points</Text>
+    <View style={styles.headerTop}>
+      {showBack && (
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Icon name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
+      )}
+      <Text style={styles.headerTitle}>{text}</Text>
     </View>
+    {showProgress && (
+      <View style={styles.userStats}>
+        <Text style={styles.levelText}>Level {userProgress.level}</Text>
+        <Text style={styles.pointsTotal}>{userProgress.totalPoints} Points</Text>
+      </View>
+    )}
   </View>
 );
 
@@ -21,13 +43,20 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 20,
     backgroundColor: '#2196F3',
+  },
+  headerTop: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    marginRight: 16,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+    flex: 1,
   },
   userStats: {
     flexDirection: 'row',
