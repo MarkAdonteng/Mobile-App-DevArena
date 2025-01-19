@@ -1,4 +1,5 @@
-import { QuizQuestion, ProgrammingLanguage, DifficultyLevel } from '../types/quiz';
+import { QuizQuestion, ProgrammingLanguage } from '../types/quiz';
+import type { DifficultyLevel } from '../types/quiz';
 
 type QuizQuestions = Record<ProgrammingLanguage, Record<string, Record<DifficultyLevel, QuizQuestion[]>>>;
 

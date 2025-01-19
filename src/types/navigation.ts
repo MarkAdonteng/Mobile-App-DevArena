@@ -5,10 +5,18 @@ export type RootStackParamList = {
   Signup: undefined;
   MainApp: undefined;
   Help: undefined;
+};
+
+export type GameStackParamList = {
   GamesList: undefined;
   CodeRunner: undefined;
   AlgorithmBattle: undefined;
-  DebugMaster: undefined;
+  RockPaperScissors: undefined;
+  Sudoku: undefined;
+  WordSearch: undefined;
+  TicTacToe: undefined;
+  DebugDetective: undefined;
+  CodeSnake: undefined;
 };
 
 export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList>;

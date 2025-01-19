@@ -1,78 +1,70 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { GameScreenNavigationProp } from '../../types/navigation';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-type Props = {
-  navigation: GameScreenNavigationProp;
-};
+export const CodeRunner = () => {
+  const [code, setCode] = useState('');
+  const [output, setOutput] = useState('');
+  const [currentChallenge, setCurrentChallenge] = useState(0);
 
-const CodeRunner: React.FC<Props> = ({ navigation }) => {
-  const [position] = useState(new Animated.ValueXY({ x: 0, y: 0 }));
-  const [score, setScore] = useState(0);
+  const challenges = [
+    {
+      title: 'FizzBuzz',
+      description: 'Write a function that prints numbers from 1 to n. For multiples of 3, print "Fizz". For multiples of 5, print "Buzz". For numbers that are multiples of both 3 and 5, print "FizzBuzz".',
+      template: `function fizzBuzz(n) {\n  // Your code here\n}`,
+      test: (code: string) => {
+        // Add test logic here
+      }
+    },
+    // Add more challenges
+  ];
 
-  const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
-    const distance = 50;
-    const duration = 200;
-
-    const moveConfig = {
-      up: { x: 0, y: -distance },
-      down: { x: 0, y: distance },
-      left: { x: -distance, y: 0 },
-      right: { x: distance, y: 0 },
-    };
-
-    Animated.timing(position, {
-      toValue: moveConfig[direction],
-      duration,
-      useNativeDriver: true,
-    }).start();
-
-    setScore(prev => prev + 10);
+  const runCode = () => {
+    try {
+      // Add code execution logic here
+      setOutput('Code executed successfully!');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setOutput(`Error: ${errorMessage}`);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.score}>Score: {score}</Text>
-      <View style={styles.gameArea}>
-        <Animated.View
-          style={[
-            styles.player,
-            {
-              transform: [
-                { translateX: position.x },
-                { translateY: position.y },
-              ],
-            },
-          ]}
+      <View style={styles.challenge}>
+        <Text style={styles.title}>{challenges[currentChallenge].title}</Text>
+        <Text style={styles.description}>
+          {challenges[currentChallenge].description}
+        </Text>
+      </View>
+
+      <View style={styles.codeArea}>
+        <TextInput
+          style={styles.codeInput}
+          multiline
+          value={code}
+          onChangeText={setCode}
+          placeholder="Write your code here..."
         />
       </View>
-      <View style={styles.controls}>
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => movePlayer('up')}
-        >
-          <Text style={styles.controlText}>↑</Text>
-        </TouchableOpacity>
-        <View style={styles.horizontalControls}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => movePlayer('left')}
-          >
-            <Text style={styles.controlText}>←</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={() => movePlayer('right')}
-          >
-            <Text style={styles.controlText}>→</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          style={styles.controlButton}
-          onPress={() => movePlayer('down')}
-        >
-          <Text style={styles.controlText}>↓</Text>
-        </TouchableOpacity>
+
+      <TouchableOpacity style={styles.runButton} onPress={runCode}>
+        <Icon name="play-arrow" size={24} color="#fff" />
+        <Text style={styles.buttonText}>Run Code</Text>
+      </TouchableOpacity>
+
+      <View style={styles.output}>
+        <Text style={styles.outputTitle}>Output:</Text>
+        <ScrollView style={styles.outputContent}>
+          <Text>{output}</Text>
+        </ScrollView>
       </View>
     </View>
   );
@@ -81,49 +73,64 @@ const CodeRunner: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     padding: 16,
+    backgroundColor: '#f5f5f5',
   },
-  score: {
+  challenge: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  gameArea: {
+  description: {
+    fontSize: 16,
+    color: '#666',
+  },
+  codeArea: {
+    flex: 1,
+    backgroundColor: '#1e1e1e',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+  },
+  codeInput: {
+    color: '#fff',
+    fontFamily: 'monospace',
+    fontSize: 16,
+  },
+  runButton: {
+    backgroundColor: '#4CAF50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  output: {
     flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 20,
-    position: 'relative',
+    borderRadius: 8,
+    padding: 16,
   },
-  player: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#2196F3',
-    borderRadius: 15,
-    position: 'absolute',
-  },
-  controls: {
-    alignItems: 'center',
-    gap: 10,
-  },
-  horizontalControls: {
-    flexDirection: 'row',
-    gap: 40,
-  },
-  controlButton: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#2196F3',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlText: {
-    color: '#fff',
-    fontSize: 24,
+  outputTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  outputContent: {
+    flex: 1,
   },
 });
 
