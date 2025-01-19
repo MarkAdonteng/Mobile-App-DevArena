@@ -103,7 +103,7 @@ const HelpScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => contactSupport('email')}
           >
             <Icon name="email" size={24} color="#2196F3" />
-            <Text style={styles.contactText}>support@aitlearning.com</Text>
+            <Text style={styles.contactText}>simplymark443@gmail.com</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -111,7 +111,7 @@ const HelpScreen: React.FC<Props> = ({ navigation }) => {
             onPress={() => contactSupport('phone')}
           >
             <Icon name="phone" size={24} color="#2196F3" />
-            <Text style={styles.contactText}>+123 456 7890</Text>
+            <Text style={styles.contactText}>+233 592 7622 55</Text>
           </TouchableOpacity>
 
           <Text style={styles.supportHours}>

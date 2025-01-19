@@ -1,52 +1,37 @@
-export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+export type ProgrammingLanguage = 'Python' | 'JavaScript' | 'Java' | 'C++' | 'React' | 'TypeScript';
 
-export type ProgrammingLanguage = 
-  | 'Python' 
-  | 'JavaScript' 
-  | 'TypeScript' 
-  | 'C++' 
-  | 'Java' 
-  | 'React'
-  | 'Swift' 
-  | 'Kotlin' 
-  | 'Go' 
-  | 'Rust'
-  | 'PHP'
-  | 'C#'
-  | 'Flutter'
-  | 'Next.js';
+export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
-export type QuizQuestion = {
+export interface Lesson {
+  id: string;
+  title: string;
+  content: string;
+  codeExamples: string[];
+  difficulty: Difficulty;
+  order: number;
+}
+
+export interface QuizQuestion {
   id: string;
   question: string;
-  code?: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
-};
+  code?: string;
+}
 
-export type QuizTopic = {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-};
-
-export type Quiz = {
-  id: string;
-  language: ProgrammingLanguage;
-  topic: string;
-  difficulty: DifficultyLevel;
-  title: string;
-  description: string;
+export interface Quiz {
   questions: QuizQuestion[];
-  timeLimit: number;
-  points: number;
-};
+  language: ProgrammingLanguage;
+  difficulty: Difficulty;
+}
 
-export type QuizProgress = {
-  quizId: string;
+export interface QuizProgress {
   completed: boolean;
   score: number;
-  dateTaken: string;
-}; 
+  timestamp: number;
+}
+
+export interface UserProgress {
+  [lessonId: string]: QuizProgress;
+} 

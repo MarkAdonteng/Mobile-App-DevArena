@@ -15,217 +15,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { fetchUserProgress, updateUserProgress } from '../services/userProgress';
 import CodeEditor from '../components/common/CodeEditor';
-
-type ProgrammingLanguage = 'Python' | 'JavaScript' | 'Java' | 'C++' | 'React' | 'TypeScript';
-type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
-
-const languageInfo: Record<ProgrammingLanguage, {
-  icon: string;
-  color: string;
-  description: string;
-}> = {
-  Python: {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_python.svg',
-    color: '#3776AB',
-    description: 'Learn Python - a versatile language known for its simplicity and readability.',
-  },
-  JavaScript: {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_js.svg',
-    color: '#F7DF1E',
-    description: 'Master JavaScript - the language of the web and modern development.',
-  },
-  Java: {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_java.svg',
-    color: '#007396',
-    description: 'Explore Java - a powerful, object-oriented programming language.',
-  },
-  'C++': {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_cpp.svg',
-    color: '#00599C',
-    description: 'Learn C++ - a high-performance language for system programming.',
-  },
-  React: {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_reactjs.svg',
-    color: '#61DAFB',
-    description: 'Master React - a popular library for building user interfaces.',
-  },
-  TypeScript: {
-    icon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_typescript.svg',
-    color: '#3178C6',
-    description: 'Learn TypeScript - a typed superset of JavaScript.',
-  },
-};
-
-type Lesson = {
-  id: string;
-  title: string;
-  content: string;
-  codeExamples: string[];
-  difficulty: Difficulty;
-  order: number;
-};
-
-type Quiz = {
-  id: string;
-  questionType: 'multiple-choice' | 'coding';
-  question: string;
-  options?: string[];
-  correctAnswer: string | string[];
-  explanation: string;
-  hint: string;
-  difficulty: Difficulty;
-  points: number;
-};
-
-const pythonLessons: Record<Difficulty, Lesson[]> = {
-  Beginner: [
-    {
-      id: 'py_basics_1',
-      title: 'Introduction to Python',
-      content: `Python is a high-level, interpreted programming language known for its simplicity and readability.
-
-Key Concepts:
-• Python syntax and basic structure
-• Variables and data types
-• Print statements and basic input/output
-
-Let's start with a simple example:`,
-      codeExamples: [`
-# This is a comment
-print("Hello, World!")  # Your first Python program
-
-# Variables and data types
-name = "Alice"          # String
-age = 25               # Integer
-height = 1.75          # Float
-is_student = True      # Boolean
-
-# Print with variables
-print(f"Name: {name}")
-print(f"Age: {age}")
-`],
-      difficulty: 'Beginner',
-      order: 1,
-    },
-    {
-      id: 'py_basics_2',
-      title: 'Basic Operations',
-      content: `Learn about basic operations in Python including arithmetic, comparison, and logical operations.
-
-Key Concepts:
-• Arithmetic operators (+, -, *, /, //, %, **)
-• Comparison operators (==, !=, >, <, >=, <=)
-• Logical operators (and, or, not)`,
-      codeExamples: [`
-# Arithmetic operations
-x = 10
-y = 3
-
-print(x + y)    # Addition: 13
-print(x - y)    # Subtraction: 7
-print(x * y)    # Multiplication: 30
-print(x / y)    # Division: 3.333...
-print(x // y)   # Floor division: 3
-print(x % y)    # Modulus: 1
-print(x ** y)   # Exponentiation: 1000
-
-# Comparison operations
-print(x > y)    # True
-print(x == y)   # False
-print(x != y)   # True
-
-# Logical operations
-a = True
-b = False
-print(a and b)  # False
-print(a or b)   # True
-print(not a)    # False
-`],
-      difficulty: 'Beginner',
-      order: 2,
-    },
-    // Add more beginner lessons
-  ],
-  Intermediate: [
-    {
-      id: 'py_inter_1',
-      title: 'Functions and Modules',
-      content: `Functions are reusable blocks of code that perform specific tasks. Modules help organize related functions and variables.
-
-Key Concepts:
-• Function definition and parameters
-• Return values
-• Default arguments
-• Module import and usage`,
-      codeExamples: [`
-# Function definition
-def greet(name, greeting="Hello"):
-    """This function prints a greeting"""
-    return f"{greeting}, {name}!"
-
-# Function calls
-print(greet("Alice"))           # Hello, Alice!
-print(greet("Bob", "Hi"))      # Hi, Bob!
-
-# Module import
-import math
-
-# Using module functions
-radius = 5
-area = math.pi * radius ** 2
-print(f"Circle area: {area:.2f}")
-`],
-      difficulty: 'Intermediate',
-      order: 1,
-    },
-    // Add more intermediate lessons
-  ],
-  Advanced: [
-    {
-      id: 'py_adv_1',
-      title: 'Decorators and Generators',
-      content: `Decorators modify function behavior. Generators create iterators efficiently.
-
-Key Concepts:
-• Decorator syntax and usage
-• Function wrapping
-• Generator functions
-• Yield statement`,
-      codeExamples: [`
-# Decorator example
-def timer(func):
-    def wrapper(*args, **kwargs):
-        import time
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"Function took {end-start:.2f} seconds")
-        return result
-    return wrapper
-
-@timer
-def slow_function():
-    import time
-    time.sleep(1)
-    return "Done!"
-
-# Generator example
-def fibonacci(n):
-    a, b = 0, 1
-    for _ in range(n):
-        yield a
-        a, b = b, a + b
-
-# Using the generator
-for num in fibonacci(5):
-    print(num)
-`],
-      difficulty: 'Advanced',
-      order: 1,
-    },
-    // Add more advanced lessons
-  ],
-};
+import { languageInfo } from '../data/languageLessons';
+import { ProgrammingLanguage, Difficulty, Lesson } from '../types/quiz';
+import QuizModal from '../components/quiz/QuizModal';
+import { SvgUri } from 'react-native-svg';
 
 const QuizScreen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<ProgrammingLanguage | null>(null);
@@ -258,12 +51,22 @@ const QuizScreen = () => {
           style={[styles.languageCard, { borderColor: info.color }]}
           onPress={() => setSelectedLanguage(lang as ProgrammingLanguage)}
         >
-          <View style={styles.languageHeader}>
-            <Image 
-              source={{ uri: info.icon }}
+          {info.icon.endsWith('.svg') ? (
+            <SvgUri
+              width={40}
+              height={40}
+              uri={info.icon}
               style={styles.languageIcon}
             />
-            <Text style={styles.languageTitle}>{lang}</Text>
+          ) : (
+            <Image
+              source={{ uri: info.icon }}
+              style={styles.languageIcon}
+              resizeMode="contain"
+            />
+          )}
+          <View style={styles.languageHeader}>
+            <Text style={[styles.languageTitle, { color: info.color }]}>{lang}</Text>
           </View>
           <Text style={styles.languageDescription}>{info.description}</Text>
           <View style={styles.progressBar}>
@@ -285,10 +88,17 @@ const QuizScreen = () => {
     </ScrollView>
   );
 
-  const calculateProgress = (language: string) => {
-    // Calculate progress based on completed lessons
-    // This is a placeholder implementation
-    return 0;
+  const calculateProgress = (language: string): number => {
+    if (!user || !userProgress) return 0;
+    
+    const languageLessons = Object.values(languageInfo[language as ProgrammingLanguage].lessons)
+      .flat();
+    
+    const completedLessons = languageLessons.filter(
+      lesson => userProgress[lesson.id]
+    ).length;
+
+    return Math.round((completedLessons / languageLessons.length) * 100);
   };
 
   const handleLessonComplete = async (lessonId: string) => {
@@ -299,20 +109,121 @@ const QuizScreen = () => {
     }
   };
 
-  const isLessonUnlocked = (difficulty: Difficulty, order: number): boolean => {
-    if (difficulty === 'Beginner') return true;
+  const isLessonUnlocked = (difficulty: Difficulty, lessonOrder: number, language: ProgrammingLanguage): boolean => {
+    if (difficulty === 'Beginner') {
+      // First lesson is always unlocked
+      if (lessonOrder === 1) return true;
+      
+      // Check if previous lesson in Beginner is completed
+      const previousLesson = languageInfo[language].lessons.Beginner
+        .find(lesson => lesson.order === lessonOrder - 1);
+      return previousLesson ? !!userProgress[previousLesson.id] : false;
+    }
+
     if (difficulty === 'Intermediate') {
-      return Object.entries(userProgress)
-        .filter(([id]) => id.startsWith('py_basics'))
-        .every(([, completed]) => completed);
+      // Check if all Beginner lessons are completed
+      const beginnerLessons = languageInfo[language].lessons.Beginner;
+      const allBeginnerCompleted = beginnerLessons.every(
+        lesson => userProgress[lesson.id]
+      );
+      
+      if (!allBeginnerCompleted) return false;
+      
+      // Check if previous Intermediate lesson is completed
+      if (lessonOrder > 1) {
+        const previousLesson = languageInfo[language].lessons.Intermediate
+          .find(lesson => lesson.order === lessonOrder - 1);
+        return previousLesson ? !!userProgress[previousLesson.id] : false;
+      }
+      
+      return true;
     }
+
     if (difficulty === 'Advanced') {
-      return Object.entries(userProgress)
-        .filter(([id]) => id.startsWith('py_inter'))
-        .every(([, completed]) => completed);
+      // Check if all Intermediate lessons are completed
+      const intermediateLessons = languageInfo[language].lessons.Intermediate;
+      const allIntermediateCompleted = intermediateLessons.every(
+        lesson => userProgress[lesson.id]
+      );
+      
+      if (!allIntermediateCompleted) return false;
+      
+      // Check if previous Advanced lesson is completed
+      if (lessonOrder > 1) {
+        const previousLesson = languageInfo[language].lessons.Advanced
+          .find(lesson => lesson.order === lessonOrder - 1);
+        return previousLesson ? !!userProgress[previousLesson.id] : false;
+      }
+      
+      return true;
     }
+
     return false;
   };
+
+  const getLessonStatus = (lesson: Lesson, language: ProgrammingLanguage) => {
+    if (userProgress[lesson.id]) {
+      return 'completed';
+    }
+    if (isLessonUnlocked(lesson.difficulty, lesson.order, language)) {
+      return 'unlocked';
+    }
+    return 'locked';
+  };
+
+  const getLessonsForLanguage = (language: ProgrammingLanguage, difficulty: Difficulty): Lesson[] => {
+    return languageInfo[language].lessons[difficulty];
+  };
+
+  const handleQuizComplete = async (score: number) => {
+    if (user && currentLesson) {
+      const updatedProgress = { ...userProgress, [currentLesson.id]: true };
+      await updateUserProgress(user.uid, updatedProgress);
+      setUserProgress(updatedProgress);
+      setShowQuiz(false);
+      setCurrentLesson(null);
+    }
+  };
+
+  const renderLessonCard = (lesson: Lesson) => (
+    <TouchableOpacity
+      key={lesson.id}
+      style={[
+        styles.lessonCard,
+        getLessonStatus(lesson, selectedLanguage!) === 'locked' && styles.lockedLesson,
+        getLessonStatus(lesson, selectedLanguage!) === 'completed' && styles.completedLesson,
+      ]}
+      onPress={() => {
+        if (getLessonStatus(lesson, selectedLanguage!) === 'locked') {
+          Alert.alert(
+            'Lesson Locked',
+            'Complete the previous lessons to unlock this one!'
+          );
+          return;
+        }
+        setCurrentLesson(lesson);
+      }}
+      disabled={getLessonStatus(lesson, selectedLanguage!) === 'locked'}
+    >
+      <View style={styles.lessonHeader}>
+        <Text style={styles.lessonTitle}>{lesson.title}</Text>
+        {getLessonStatus(lesson, selectedLanguage!) === 'completed' && (
+          <Icon name="check-circle" size={24} color="#4CAF50" />
+        )}
+        {getLessonStatus(lesson, selectedLanguage!) === 'locked' && (
+          <Icon name="lock" size={24} color="#999" />
+        )}
+      </View>
+      <Text style={styles.lessonDescription}>
+        {lesson.content.split('\n')[0]}
+      </Text>
+      {getLessonStatus(lesson, selectedLanguage!) === 'locked' && (
+        <Text style={styles.lockMessage}>
+          Complete previous lessons to unlock
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -363,38 +274,8 @@ const QuizScreen = () => {
             <ActivityIndicator size="large" color="#2196F3" />
           ) : (
             <ScrollView style={styles.lessonList}>
-              {pythonLessons[selectedDifficulty].map((lesson) => (
-                <TouchableOpacity
-                  key={lesson.id}
-                  style={[
-                    styles.lessonCard,
-                    !isLessonUnlocked(lesson.difficulty, lesson.order) && styles.lockedLesson,
-                  ]}
-                  onPress={() => {
-                    if (isLessonUnlocked(lesson.difficulty, lesson.order)) {
-                      setCurrentLesson(lesson);
-                    } else {
-                      Alert.alert(
-                        'Lesson Locked',
-                        'Complete previous lessons to unlock this one!'
-                      );
-                    }
-                  }}
-                  disabled={!isLessonUnlocked(lesson.difficulty, lesson.order)}
-                >
-                  <View style={styles.lessonHeader}>
-                    <Text style={styles.lessonTitle}>{lesson.title}</Text>
-                    {userProgress[lesson.id] && (
-                      <Icon name="check-circle" size={24} color="#4CAF50" />
-                    )}
-                    {!isLessonUnlocked(lesson.difficulty, lesson.order) && (
-                      <Icon name="lock" size={24} color="#999" />
-                    )}
-                  </View>
-                  <Text style={styles.lessonDescription}>
-                    {lesson.content.split('\n')[0]}
-                  </Text>
-                </TouchableOpacity>
+              {getLessonsForLanguage(selectedLanguage, selectedDifficulty).map((lesson) => (
+                renderLessonCard(lesson)
               ))}
             </ScrollView>
           )}
@@ -441,6 +322,16 @@ const QuizScreen = () => {
               </View>
             )}
           </Modal>
+
+          {/* Add QuizModal */}
+          {currentLesson && (
+            <QuizModal
+              visible={showQuiz}
+              onClose={() => setShowQuiz(false)}
+              lessonId={currentLesson.id}
+              onComplete={handleQuizComplete}
+            />
+          )}
         </>
       )}
     </View>
@@ -508,7 +399,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   lockedLesson: {
-    opacity: 0.5,
+    opacity: 0.7,
+    backgroundColor: '#f5f5f5',
   },
   lessonHeader: {
     flexDirection: 'row',
@@ -604,10 +496,12 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: '#f0f0f0',
     borderRadius: 2,
-    marginBottom: 4,
+    marginVertical: 8,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
+    backgroundColor: '#4CAF50',
     borderRadius: 2,
   },
   progressText: {
@@ -618,6 +512,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginTop: 4,
+  },
+  completedLesson: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+  },
+  lockMessage: {
+    color: '#666',
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 8,
   },
 });
 

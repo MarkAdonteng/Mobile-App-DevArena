@@ -11,12 +11,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { QuizQuestion, ProgrammingLanguage, DifficultyLevel } from '../../types/quiz';
 import { fetchQuizQuestions } from '../../services/quizApi';
 
-type Props = {
+interface Props {
   language: ProgrammingLanguage;
   difficulty: DifficultyLevel;
   onComplete: (score: number) => void;
   onBack: () => void;
-};
+}
 
 export const QuizInterface: React.FC<Props> = ({
   language,

@@ -1,7 +1,12 @@
-import { QuizQuestion, ProgrammingLanguage } from '../types/quiz';
-import type { DifficultyLevel } from '../types/quiz';
+import { QuizQuestion, Difficulty, ProgrammingLanguage } from '../types/quiz';
 
-type QuizQuestions = Record<ProgrammingLanguage, Record<string, Record<DifficultyLevel, QuizQuestion[]>>>;
+interface QuizQuestions {
+  [language: string]: {
+    [category: string]: {
+      [difficulty in Difficulty]: QuizQuestion[];
+    };
+  };
+}
 
 const programmingQuizzes: QuizQuestions = {
   'Python': {
@@ -116,7 +121,7 @@ const programmingQuizzes: QuizQuestions = {
 export const fetchQuizQuestions = async (
   language: ProgrammingLanguage,
   topic: string,
-  difficulty: DifficultyLevel,
+  difficulty: Difficulty,
 ): Promise<QuizQuestion[]> => {
   try {
     const questions = programmingQuizzes[language]?.[topic]?.[difficulty] || [];
