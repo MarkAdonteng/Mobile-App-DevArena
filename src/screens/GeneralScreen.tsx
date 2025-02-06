@@ -1,224 +1,227 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Animated,
-  Image,
   useWindowDimensions,
+  ImageBackground,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Header } from '../components/common/Header';
-
-const features = [
-  {
-    id: '1',
-    title: 'Interactive Learning',
-    description: 'Learn programming through hands-on quizzes and challenges',
-    icon: 'school',
-    color: '#2196F3',
-  },
-  {
-    id: '2',
-    title: 'Multiple Languages',
-    description: 'Master popular programming languages from Python to React',
-    icon: 'code',
-    color: '#4CAF50',
-  },
-  {
-    id: '3',
-    title: 'Track Progress',
-    description: 'Monitor your learning journey with detailed statistics',
-    icon: 'trending-up',
-    color: '#FF9800',
-  },
-  {
-    id: '4',
-    title: 'Learn by Playing',
-    description: 'Enjoy coding games while improving your skills',
-    icon: 'sports-esports',
-    color: '#9C27B0',
-  },
-];
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProp } from '../types/navigation';
+import { useUser } from '../context/UserContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const GeneralScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
+  const { user } = useUser();
   const { width } = useWindowDimensions();
-  const fadeAnims = features.map(() => new Animated.Value(0));
-  const slideAnims = features.map(() => new Animated.Value(50));
 
-  useEffect(() => {
-    const animations = features.map((_, index) => {
-      const delay = index * 200;
-      return Animated.parallel([
-        Animated.timing(fadeAnims[index], {
-          toValue: 1,
-          duration: 1000,
-          delay,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnims[index], {
-          toValue: 0,
-          duration: 1000,
-          delay,
-          useNativeDriver: true,
-        }),
-      ]);
-    });
-
-    Animated.stagger(100, animations).start();
-  }, []);
+  const features = [
+    {
+      title: 'Interactive Lessons',
+      description: 'Learn through hands-on coding exercises',
+      icon: 'code',
+      color: '#4CAF50',
+      action: () => navigation.navigate('Quiz'),
+    },
+    {
+      title: 'Progress Tracking',
+      description: 'Monitor your learning journey',
+      icon: 'trending-up',
+      color: '#2196F3',
+      action: () => navigation.navigate('Account'),
+    },
+    {
+      title: 'Earn Badges',
+      description: 'Get rewarded for your achievements',
+      icon: 'military-tech',
+      color: '#FFC107',
+      action: () => navigation.navigate('Account'),
+    },
+    {
+      title: 'Multiple Languages',
+      description: 'Learn various programming languages',
+      icon: 'language',
+      color: '#9C27B0',
+      action: () => navigation.navigate('Quiz'),
+    },
+  ];
 
   return (
-    <View style={styles.container}>
-      {/* <Header text="Welcome to AIT" showProgress={false} /> */}
-      <ScrollView style={styles.content}>
-        <View style={styles.heroSection}>
-          <Image
-            source={{ 
-              uri: 'https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg'
-            }}
-            style={styles.heroImage}
-            resizeMode="contain"
-          />
-          <Text style={styles.heroTitle}>Learn Programming the Fun Way</Text>
-          <Text style={styles.heroSubtitle}>
-            Interactive lessons, quizzes, and games to help you master coding and algorithms
+    <ScrollView style={styles.container}>
+      {/* Welcome Section */}
+      <ImageBackground
+        source={{ 
+          uri: 'https://img.freepik.com/free-vector/programming-concept-illustration_114360-1351.jpg'
+        }}
+        style={styles.header}
+      >
+        <LinearGradient
+          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.9)']}
+          style={styles.gradient}
+        >
+          <Text style={styles.welcomeText}>
+            Welcome back,{'\n'}
+            <Text style={styles.userName}>{user?.fullName || 'Learner'}</Text>
           </Text>
-        </View>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Icon name="school" size={24} color="#FFC107" />
+              <Text style={styles.statNumber}>{user?.rewards?.completedQuizzes || 0}</Text>
+              <Text style={styles.statLabel}>Quizzes</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Icon name="emoji-events" size={24} color="#FFC107" />
+              <Text style={styles.statNumber}>{user?.rewards?.points || 0}</Text>
+              <Text style={styles.statLabel}>Points</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Icon name="military-tech" size={24} color="#FFC107" />
+              <Text style={styles.statNumber}>{user?.rewards?.badges?.length || 0}</Text>
+              <Text style={styles.statLabel}>Badges</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </ImageBackground>
 
-        <View style={styles.featuresSection}>
-          <Text style={styles.sectionTitle}>Why Choose AIT?</Text>
+      {/* Features Grid */}
+      <View style={styles.featuresContainer}>
+        <Text style={styles.sectionTitle}>Start Learning</Text>
+        <View style={styles.featuresGrid}>
           {features.map((feature, index) => (
-            <Animated.View
-              key={feature.id}
-              style={[
-                styles.featureCard,
-                {
-                  opacity: fadeAnims[index],
-                  transform: [{ translateY: slideAnims[index] }],
-                },
-              ]}
+            <TouchableOpacity
+              key={index}
+              style={[styles.featureCard, { width: width / 2 - 24 }]}
+              onPress={feature.action}
             >
-              <View style={[styles.iconContainer, { backgroundColor: feature.color }]}>
-                <Icon name={feature.icon} size={32} color="#fff" />
-              </View>
-              <View style={styles.featureContent}>
+              <LinearGradient
+                colors={[feature.color, `${feature.color}99`]}
+                style={styles.featureGradient}
+              >
+                <Icon name={feature.icon} size={32} color="#FFF" />
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDescription}>{feature.description}</Text>
-              </View>
-            </Animated.View>
+              </LinearGradient>
+            </TouchableOpacity>
           ))}
         </View>
+      </View>
 
-        <View style={styles.ctaSection}>
-          <TouchableOpacity style={styles.ctaButton}>
-            <Text style={styles.ctaButtonText}>Start Learning Now</Text>
-            <Icon name="arrow-forward" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+      {/* Quick Actions */}
+      <View style={styles.quickActions}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Quiz')}
+        >
+          <Icon name="play-arrow" size={24} color="#FFF" />
+          <Text style={styles.actionButtonText}>Continue Learning</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
   },
-  content: {
-    flex: 1,
+  header: {
+    height: 300,
+    justifyContent: 'flex-end',
   },
-  heroSection: {
-    padding: 24,
-    alignItems: 'center',
-    backgroundColor: '#fff',
+  gradient: {
+    padding: 20,
+    paddingTop: 40,
   },
-  heroImage: {
-    width: '80%',
-    height: 200,
-    marginBottom: 24,
+  welcomeText: {
+    fontSize: 24,
+    color: '#FFF',
+    marginBottom: 20,
   },
-  heroTitle: {
-    fontSize: 28,
+  userName: {
+    fontSize: 32,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 12,
-    color: '#1a1a1a',
+    color: '#FFF',
   },
-  heroSubtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
-    lineHeight: 24,
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
-  featuresSection: {
-    padding: 24,
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#FFF',
+    opacity: 0.8,
+  },
+  featuresContainer: {
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#1a1a1a',
+    marginBottom: 16,
+    color: '#333',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   featureCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
+    height: 160,
     marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 4,
   },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  featureContent: {
+  featureGradient: {
     flex: 1,
+    padding: 16,
+    justifyContent: 'space-between',
   },
   featureTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1a1a1a',
+    color: '#FFF',
+    marginTop: 8,
   },
   featureDescription: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    color: '#FFF',
+    opacity: 0.9,
   },
-  ctaSection: {
-    padding: 24,
-    alignItems: 'center',
+  quickActions: {
+    padding: 16,
+    paddingTop: 0,
   },
-  ctaButton: {
-    flexDirection: 'row',
+  actionButton: {
     backgroundColor: '#2196F3',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 30,
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
   },
-  ctaButtonText: {
-    color: '#fff',
+  actionButtonText: {
+    color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 12,
+    marginLeft: 8,
   },
 });
 

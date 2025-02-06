@@ -211,8 +211,10 @@ const QuizScreen = () => {
   const handleQuizComplete = async (score: number) => {
     if (user && currentLesson) {
       try {
-        // Only update progress if the user passed the quiz
-        if (score >= PASSING_SCORE) {
+        // Only update progress if:
+        // 1. The user passed the quiz
+        // 2. The lesson hasn't been completed before
+        if (score >= PASSING_SCORE && !userProgress[currentLesson.id]) {
           // Create new progress object with the completed lesson
           const updatedProgress = { 
             ...userProgress,

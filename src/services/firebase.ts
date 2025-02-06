@@ -63,24 +63,27 @@ export const signIn = async (email: string, password: string) => {
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     const userData = userDoc.data();
 
-    // Ensure rewards exist with default values if not present
-    const rewards = userData?.rewards || {
-      points: 0,
-      badges: [],
-      completedQuizzes: 0
-    };
+    if (!userData) {
+      throw new Error('User data not found');
+    }
 
+    // Ensure we return data matching the User type
     return {
       uid: user.uid,
-      email: user.email,
-      fullName: userData?.fullName,
-      profileImage: userData?.profileImage,
-      completedModules: userData?.completedModules || [],
-      achievements: userData?.achievements || [],
-      rewards: rewards // Make sure rewards are included in the return
+      email: user.email || '',  // Convert null to empty string
+      fullName: userData.fullName || '',
+      profileImage: userData.profileImage || '',
+      completedModules: userData.completedModules || [],
+      achievements: userData.achievements || [],
+      rewards: userData.rewards || {
+        points: 0,
+        badges: [],
+        completedQuizzes: 0
+      }
     };
   } catch (error: any) {
-    throw new Error(error.message);
+    console.error('Sign in error:', error);
+    throw error;
   }
 };
 

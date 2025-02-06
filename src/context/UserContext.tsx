@@ -7,13 +7,16 @@ import { db, fetchUserData } from '../services/firebase';
 
 export type User = {
   uid: string;
-  fullName: string;
   email: string;
+  fullName: string;
   profileImage?: string;
-  points?: number;
-  completedModules?: string[];
-  achievements?: string[];
-  rewards: UserRewards;
+  completedModules: string[];
+  achievements: string[];
+  rewards: {
+    points: number;
+    badges: any[];  // or proper Badge type
+    completedQuizzes: number;
+  };
 };
 
 type UserContextType = {
