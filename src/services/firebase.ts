@@ -79,4 +79,4 @@ export const logOut = async () => {
   }
 };
 
-export { auth, db };
+export { auth, db, app };
