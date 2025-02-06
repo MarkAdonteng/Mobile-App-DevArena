@@ -19,6 +19,9 @@ import { languageInfo } from '../data/languageLessons';
 import { ProgrammingLanguage, Difficulty, Lesson } from '../types/quiz';
 import QuizModal from '../components/quiz/QuizModal';
 import { SvgUri } from 'react-native-svg';
+import { getDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { PASSING_SCORE } from '../config/constants';
 
 const QuizScreen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<ProgrammingLanguage | null>(null);
@@ -30,18 +33,22 @@ const QuizScreen = () => {
   const { user } = useUser();
 
   useEffect(() => {
-    if (user) {
-      loadUserProgress();
-    }
-  }, [user]);
+    const fetchUserProgress = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userData = userDoc.data();
+          setUserProgress(userData?.progress || {});
+        } catch (error) {
+          console.error('Error fetching user progress:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
 
-  const loadUserProgress = async () => {
-    if (user) {
-      const progress = await fetchUserProgress(user.uid);
-      setUserProgress(progress);
-      setLoading(false);
-    }
-  };
+    fetchUserProgress();
+  }, [user]);
 
   const LanguageSelector = () => (
     <ScrollView style={styles.languageList}>
@@ -162,12 +169,38 @@ const QuizScreen = () => {
   };
 
   const getLessonStatus = (lesson: Lesson, language: ProgrammingLanguage) => {
-    if (userProgress[lesson.id]) {
+    // Check if the lesson is completed
+    if (userProgress && userProgress[lesson.id]) {
       return 'completed';
     }
-    if (isLessonUnlocked(lesson.difficulty, lesson.order, language)) {
+
+    // First lesson of each difficulty is unlocked by default
+    if (lesson.order === 1) {
+      if (lesson.difficulty === 'Beginner') {
+        return 'unlocked';
+      }
+      // For Intermediate, check if all Beginner lessons are completed
+      if (lesson.difficulty === 'Intermediate') {
+        const beginnerLessons = getLessonsForLanguage(language, 'Beginner');
+        const allBeginnerCompleted = beginnerLessons.every(l => userProgress[l.id]);
+        if (allBeginnerCompleted) return 'unlocked';
+      }
+      // For Advanced, check if all Intermediate lessons are completed
+      if (lesson.difficulty === 'Advanced') {
+        const intermediateLessons = getLessonsForLanguage(language, 'Intermediate');
+        const allIntermediateCompleted = intermediateLessons.every(l => userProgress[l.id]);
+        if (allIntermediateCompleted) return 'unlocked';
+      }
+    }
+
+    // For subsequent lessons, check if previous lesson is completed
+    const currentDifficultyLessons = getLessonsForLanguage(language, lesson.difficulty);
+    const previousLesson = currentDifficultyLessons.find(l => l.order === lesson.order - 1);
+    
+    if (previousLesson && userProgress && userProgress[previousLesson.id]) {
       return 'unlocked';
     }
+
     return 'locked';
   };
 
@@ -177,14 +210,33 @@ const QuizScreen = () => {
 
   const handleQuizComplete = async (score: number) => {
     if (user && currentLesson) {
-      // Only update progress if the user passed the quiz
-      if (score >= PASSING_SCORE) {
-        const updatedProgress = { ...userProgress, [currentLesson.id]: true };
-        await updateUserProgress(user.uid, updatedProgress);
-        setUserProgress(updatedProgress);
+      try {
+        // Only update progress if the user passed the quiz
+        if (score >= PASSING_SCORE) {
+          // Create new progress object with the completed lesson
+          const updatedProgress = { 
+            ...userProgress,
+            [currentLesson.id]: true 
+          };
+
+          // Update Firestore
+          await updateDoc(doc(db, 'users', user.uid), {
+            progress: updatedProgress
+          });
+
+          // Update local state
+          setUserProgress(updatedProgress);
+        }
+      } catch (error) {
+        console.error('Error updating progress:', error);
+        Alert.alert(
+          'Error',
+          'Failed to save your progress. Please check your internet connection.'
+        );
+      } finally {
+        setShowQuiz(false);
+        setCurrentLesson(null);
       }
-      setShowQuiz(false);
-      setCurrentLesson(null);
     }
   };
 

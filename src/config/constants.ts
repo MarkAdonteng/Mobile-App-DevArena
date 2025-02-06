@@ -1,0 +1,1 @@
+export const PASSING_SCORE = 80; // 80% passing threshold 

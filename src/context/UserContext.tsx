@@ -58,9 +58,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newPoints = updatedUser.rewards.points + POINTS_PER_QUIZ;
       const newCompletedQuizzes = updatedUser.rewards.completedQuizzes + 1;
 
+      // Check for new badges based on completed quizzes
+      const newBadges = AVAILABLE_BADGES.filter(badge => 
+        !updatedUser.rewards.badges.find(b => b.id === badge.id) && 
+        newCompletedQuizzes >= badge.requirement
+      );
+
       const updatedRewards = {
         points: newPoints,
-        badges: [...updatedUser.rewards.badges],
+        badges: [...updatedUser.rewards.badges, ...newBadges],
         completedQuizzes: newCompletedQuizzes
       };
 
@@ -73,6 +79,19 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Refresh user data from Firestore to ensure consistency
       await refreshUserData();
+
+      // Show badge notifications after successful update
+      if (newBadges.length > 0) {
+        // Show badges one at a time with a slight delay
+        for (const badge of newBadges) {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Add small delay between notifications
+          Alert.alert(
+            '🏆 New Badge Earned!',
+            `Congratulations! You've earned the "${badge.name}" badge!\n\n${badge.description}`,
+            [{ text: 'OK' }]
+          );
+        }
+      }
 
       return true;
     } catch (error) {
