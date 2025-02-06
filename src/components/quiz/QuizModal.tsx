@@ -29,7 +29,7 @@ type Props = {
   onComplete: (score: number) => void;
 };
 
-const PASSING_SCORE = 70; // 70% passing threshold
+const PASSING_SCORE = 80; // 80% passing threshold
 
 const quizzes: Record<string, QuizQuestion[]> = {
   'py_basics_1': [
@@ -988,23 +988,45 @@ const QuizModal: React.FC<Props> = ({ visible, onClose, lessonId, onComplete }) 
         try {
           if (passed) {
             await updateRewards(true, lessonId);
-          }
-          
-          Alert.alert(
-            'Quiz Completed!',
-            passed 
-              ? `Congratulations! You scored ${finalScore}% and passed the quiz!`
-              : `You scored ${finalScore}%. You need ${PASSING_SCORE}% to pass and unlock the next quiz.`,
-            [
-              {
-                text: passed ? 'Continue' : 'Try Again',
-                onPress: () => {
-                  onComplete(finalScore);
-                  onClose();
+            Alert.alert(
+              'Quiz Completed!',
+              `Congratulations! You scored ${finalScore}% and passed the quiz!`,
+              [
+                {
+                  text: 'Continue',
+                  onPress: () => {
+                    onComplete(finalScore);
+                    onClose();
+                  },
                 },
-              },
-            ]
-          );
+              ]
+            );
+          } else {
+            Alert.alert(
+              'Quiz Failed',
+              `You scored ${finalScore}%. You need ${PASSING_SCORE}% to pass and unlock the next quiz.`,
+              [
+                {
+                  text: 'Try Again',
+                  onPress: () => {
+                    // Reset the quiz state
+                    setCurrentQuestionIndex(0);
+                    setScore(0);
+                    setSelectedAnswer(null);
+                    setShowExplanation(false);
+                    onComplete(finalScore);
+                  },
+                },
+                {
+                  text: 'Exit',
+                  onPress: () => {
+                    onComplete(finalScore);
+                    onClose();
+                  },
+                },
+              ]
+            );
+          }
         } catch (error) {
           Alert.alert('Error', 'Failed to save quiz results. Please try again.');
         } finally {

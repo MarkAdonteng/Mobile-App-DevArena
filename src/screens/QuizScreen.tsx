@@ -177,9 +177,12 @@ const QuizScreen = () => {
 
   const handleQuizComplete = async (score: number) => {
     if (user && currentLesson) {
-      const updatedProgress = { ...userProgress, [currentLesson.id]: true };
-      await updateUserProgress(user.uid, updatedProgress);
-      setUserProgress(updatedProgress);
+      // Only update progress if the user passed the quiz
+      if (score >= PASSING_SCORE) {
+        const updatedProgress = { ...userProgress, [currentLesson.id]: true };
+        await updateUserProgress(user.uid, updatedProgress);
+        setUserProgress(updatedProgress);
+      }
       setShowQuiz(false);
       setCurrentLesson(null);
     }
