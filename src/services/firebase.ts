@@ -40,7 +40,12 @@ export const signUp = async (email: string, password: string, fullName: string) 
       createdAt: new Date().toISOString(),
       points: 0,
       completedModules: [],
-      achievements: []
+      achievements: [],
+      rewards: {
+        points: 0,
+        badges: [],
+        completedQuizzes: 0
+      }
     });
 
     return user;
@@ -58,13 +63,21 @@ export const signIn = async (email: string, password: string) => {
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     const userData = userDoc.data();
 
+    // Ensure rewards exist with default values if not present
+    const rewards = userData?.rewards || {
+      points: 0,
+      badges: [],
+      completedQuizzes: 0
+    };
+
     return {
       uid: user.uid,
       email: user.email,
       fullName: userData?.fullName,
-      points: userData?.points,
-      completedModules: userData?.completedModules,
-      achievements: userData?.achievements
+      profileImage: userData?.profileImage,
+      completedModules: userData?.completedModules || [],
+      achievements: userData?.achievements || [],
+      rewards: rewards // Make sure rewards are included in the return
     };
   } catch (error: any) {
     throw new Error(error.message);
@@ -76,6 +89,51 @@ export const logOut = async () => {
     await signOut(auth);
   } catch (error: any) {
     throw new Error(error.message);
+  }
+};
+
+export const fetchUserData = async (uid: string) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', uid));
+    const userData = userDoc.data();
+
+    if (!userData) {
+      // Initialize with default values if no data exists
+      const defaultUserData = {
+        uid,
+        email: '',
+        fullName: '',
+        profileImage: '',
+        completedModules: [],
+        achievements: [],
+        rewards: {
+          points: 0,
+          badges: [],
+          completedQuizzes: 0
+        }
+      };
+      
+      // Create the user document with default values
+      await setDoc(doc(db, 'users', uid), defaultUserData);
+      return defaultUserData;
+    }
+
+    return {
+      uid,
+      email: userData.email || '',
+      fullName: userData.fullName || '',
+      profileImage: userData.profileImage || '',
+      completedModules: userData.completedModules || [],
+      achievements: userData.achievements || [],
+      rewards: userData.rewards || {
+        points: 0,
+        badges: [],
+        completedQuizzes: 0
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
   }
 };
 

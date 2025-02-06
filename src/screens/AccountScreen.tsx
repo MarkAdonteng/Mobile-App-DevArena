@@ -9,6 +9,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useUser } from '../context/UserContext';
@@ -16,12 +17,17 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthScreenNavigationProp } from '../types/navigation';
 import * as ImagePicker from 'expo-image-picker';
 import { logOut } from '../services/firebase';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 const AccountScreen = () => {
   const { user, setUser } = useUser();
   const navigation = useNavigation<AuthScreenNavigationProp>();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editedName, setEditedName] = useState(user?.fullName || '');
+
+  const userRewards = user?.rewards || { points: 0, badges: [], completedQuizzes: 0 };
 
   const handleLogout = async () => {
     Alert.alert(
@@ -88,49 +94,90 @@ const AccountScreen = () => {
     }
   };
 
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Please log in to view your account</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handlePickImage}>
-          {user?.profileImage ? (
-            <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Icon name="person" size={40} color="#fff" />
+      <LinearGradient
+        colors={['#2196F3', '#1976D2']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handlePickImage} style={styles.profileImageContainer}>
+            {user?.profileImage ? (
+              <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <Icon name="person" size={40} color="#fff" />
+              </View>
+            )}
+            <View style={styles.editImageButton}>
+              <Icon name="camera-alt" size={20} color="#fff" />
             </View>
-          )}
-          <View style={styles.editImageButton}>
-            <Icon name="camera-alt" size={20} color="#fff" />
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.userName}>{user?.fullName}</Text>
-        <Text style={styles.userEmail}>{user?.email}</Text>
+          </TouchableOpacity>
+          <Text style={styles.userName}>{user?.fullName}</Text>
+          <Text style={styles.userEmail}>{user?.email}</Text>
+        </View>
+      </LinearGradient>
+
+      <View style={styles.statsOverview}>
+        <View style={styles.statCard}>
+          <Icon name="stars" size={32} color="#FFD700" />
+          <Text style={styles.statValue}>{userRewards.points}</Text>
+          <Text style={styles.statLabel}>Total Points</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Icon name="quiz" size={32} color="#2196F3" />
+          <Text style={styles.statValue}>{userRewards.completedQuizzes}</Text>
+          <Text style={styles.statLabel}>Quizzes Completed</Text>
+        </View>
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>120</Text>
-          <Text style={styles.statLabel}>Points</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>15</Text>
-          <Text style={styles.statLabel}>Completed</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>5</Text>
-          <Text style={styles.statLabel}>Badges</Text>
-        </View>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Earned Badges</Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.badgesContainer}
+        >
+          {userRewards.badges.length > 0 ? (
+            userRewards.badges.map((badge) => (
+              <View key={badge.id} style={styles.badgeCard}>
+                <View style={styles.badgeIconContainer}>
+                  <Icon name={badge.icon} size={32} color="#2196F3" />
+                </View>
+                <Text style={styles.badgeName}>{badge.name}</Text>
+                <Text style={styles.badgeDescription}>{badge.description}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.noBadgesContainer}>
+              <Icon name="emoji-events" size={48} color="#ccc" />
+              <Text style={styles.noBadgesText}>Complete quizzes to earn badges!</Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
 
       <View style={styles.menuContainer}>
         <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
-          <Icon name="edit" size={24} color="#666" />
+          <View style={styles.menuIconContainer}>
+            <Icon name="edit" size={24} color="#2196F3" />
+          </View>
           <Text style={styles.menuText}>Edit Profile</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.menuItem}>
-          <Icon name="settings" size={24} color="#666" />
+          <View style={styles.menuIconContainer}>
+            <Icon name="settings" size={24} color="#2196F3" />
+          </View>
           <Text style={styles.menuText}>Settings</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
@@ -139,7 +186,9 @@ const AccountScreen = () => {
           style={styles.menuItem}
           onPress={() => navigation.navigate('Help')}
         >
-          <Icon name="help" size={24} color="#666" />
+          <View style={styles.menuIconContainer}>
+            <Icon name="help" size={24} color="#2196F3" />
+          </View>
           <Text style={styles.menuText}>Help & Support</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
@@ -148,7 +197,9 @@ const AccountScreen = () => {
           style={[styles.menuItem, styles.logoutButton]} 
           onPress={handleLogout}
         >
-          <Icon name="logout" size={24} color="#f44336" />
+          <View style={[styles.menuIconContainer, styles.logoutIcon]}>
+            <Icon name="logout" size={24} color="#f44336" />
+          </View>
           <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
         </TouchableOpacity>
       </View>
@@ -166,6 +217,7 @@ const AccountScreen = () => {
               value={editedName}
               onChangeText={setEditedName}
               placeholder="Full Name"
+              placeholderTextColor="#999"
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -193,88 +245,173 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  headerGradient: {
+    paddingTop: 40,
+    paddingBottom: 30,
+  },
   header: {
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+  },
+  profileImageContainer: {
+    marginBottom: 15,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#fff',
   },
   profileImagePlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#2196F3',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#fff',
   },
   editImageButton: {
     position: 'absolute',
     right: 0,
     bottom: 0,
     backgroundColor: '#2196F3',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#fff',
+    elevation: 4,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    color: '#fff',
     marginTop: 10,
   },
   userEmail: {
     fontSize: 16,
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
     marginTop: 5,
   },
-  statsContainer: {
+  statsOverview: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 20,
-    backgroundColor: '#fff',
-    marginTop: 20,
+    marginTop: -30,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  statItem: {
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 15,
+    marginHorizontal: 5,
     alignItems: 'center',
+    elevation: 4,
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2196F3',
+    marginTop: 8,
+    color: '#333',
   },
   statLabel: {
     fontSize: 14,
     color: '#666',
-    marginTop: 5,
+    marginTop: 4,
+  },
+  section: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+  },
+  badgesContainer: {
+    paddingRight: 20,
+  },
+  badgeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 15,
+    marginRight: 15,
+    width: width * 0.6,
+    elevation: 3,
+  },
+  badgeIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  badgeName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 8,
+    color: '#333',
+  },
+  badgeDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  noBadgesContainer: {
+    width: width - 40,
+    padding: 30,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    elevation: 3,
+  },
+  noBadgesText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
   },
   menuContainer: {
     backgroundColor: '#fff',
-    marginTop: 20,
-    paddingVertical: 10,
+    marginTop: 10,
+    borderRadius: 15,
+    marginHorizontal: 20,
+    paddingVertical: 5,
+    elevation: 3,
+    marginBottom: 20,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#f0f0f0',
+  },
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   menuText: {
     fontSize: 16,
-    marginLeft: 15,
     flex: 1,
+    color: '#333',
   },
   logoutButton: {
     borderBottomWidth: 0,
+  },
+  logoutIcon: {
+    backgroundColor: '#ffebee',
   },
   logoutText: {
     color: '#f44336',
@@ -287,21 +424,24 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
-    width: '80%',
+    width: '85%',
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: '#333',
   },
   modalInput: {
     backgroundColor: '#f5f5f5',
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
+    fontSize: 16,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -312,6 +452,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginHorizontal: 5,
+    elevation: 2,
   },
   cancelButton: {
     backgroundColor: '#f5f5f5',
@@ -323,11 +464,19 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   saveButtonText: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

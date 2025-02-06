@@ -6,120 +6,114 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
-  Alert,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { AuthScreenNavigationProp } from '../types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-type Props = {
-  navigation: AuthScreenNavigationProp;
-};
+const { width } = Dimensions.get('window');
 
-const HelpScreen: React.FC<Props> = ({ navigation }) => {
-  const tutorials = [
+const HelpScreen = () => {
+  const navigation = useNavigation();
+
+  const helpSections = [
     {
       title: 'Getting Started',
-      content: [
-        'Welcome to AIT Learning Hub!',
-        '1. Start by exploring the different learning modules in the Quizzes section',
-        '2. Play interactive coding games in the Games section',
-        '3. Watch educational videos in the Videos section',
-        '4. Track your progress in the Account section',
+      icon: 'play-circle-outline',
+      items: [
+        'Create an account or sign in',
+        'Complete your profile',
+        'Start with basic tutorials',
+        'Track your progress',
       ],
     },
     {
-      title: 'Quizzes',
-      content: [
-        'Test your knowledge with our interactive quizzes:',
-        '• Select a programming language module',
-        '• Choose a quiz from the available options',
-        '• Answer questions to earn points',
-        '• Review explanations for correct answers',
+      title: 'Quiz Help',
+      icon: 'quiz',
+      items: [
+        'Answer questions to earn points',
+        'Review explanations after each answer',
+        'Earn badges for completing quizzes',
+        'Track your quiz performance',
       ],
     },
     {
-      title: 'Games',
-      content: [
-        'Learn while having fun with our coding games:',
-        '• Code Runner: Navigate through coding challenges',
-        '• Algorithm Battle: Practice sorting algorithms',
-        '• Debug Master: Find and fix code bugs',
-        'Each game helps reinforce different programming concepts',
+      title: 'Games & Practice',
+      icon: 'sports-esports',
+      items: [
+        'Play coding games to learn',
+        'Practice with interactive challenges',
+        'Compete with other learners',
+        'Improve your skills through gameplay',
       ],
     },
     {
-      title: 'Videos',
-      content: [
-        'Watch educational programming tutorials:',
-        '• Browse through different topics',
-        '• Learn at your own pace',
-        '• Practice alongside the tutorials',
-        '• Save videos for later viewing',
+      title: 'Account Settings',
+      icon: 'settings',
+      items: [
+        'Update your profile information',
+        'Change your password',
+        'Manage notifications',
+        'Privacy settings',
       ],
     },
   ];
 
-  const contactSupport = async (method: 'email' | 'phone') => {
-    try {
-      if (method === 'email') {
-        await Linking.openURL('mailto:support@aitlearning.com');
-      } else {
-        await Linking.openURL('tel:+1234567890');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Unable to open contact method');
-    }
+  const handleContact = () => {
+    Linking.openURL('mailto:support@codelearning.com');
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#2196F3', '#1976D2']}
+        style={styles.header}
       >
-        <Icon name="arrow-back" size={24} color="#2196F3" />
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Help & Support</Text>
+        </View>
+      </LinearGradient>
 
-      <Text style={styles.title}>Help & Support</Text>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>App Tutorial</Text>
-        {tutorials.map((tutorial, index) => (
-          <View key={index} style={styles.tutorialCard}>
-            <Text style={styles.tutorialTitle}>{tutorial.title}</Text>
-            {tutorial.content.map((item, i) => (
-              <Text key={i} style={styles.tutorialText}>{item}</Text>
-            ))}
+      <ScrollView style={styles.content}>
+        {helpSections.map((section, index) => (
+          <View key={index} style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Icon name={section.icon} size={24} color="#2196F3" />
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+            </View>
+            <View style={styles.sectionContent}>
+              {section.items.map((item, itemIndex) => (
+                <View key={itemIndex} style={styles.helpItem}>
+                  <Icon name="check-circle" size={20} color="#4CAF50" />
+                  <Text style={styles.helpText}>{item}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         ))}
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact Support</Text>
-        <View style={styles.contactCard}>
-          <TouchableOpacity 
-            style={styles.contactButton}
-            onPress={() => contactSupport('email')}
-          >
-            <Icon name="email" size={24} color="#2196F3" />
-            <Text style={styles.contactText}>simplymark443@gmail.com</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.contactButton}
-            onPress={() => contactSupport('phone')}
-          >
-            <Icon name="phone" size={24} color="#2196F3" />
-            <Text style={styles.contactText}>+233 592 7622 55</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.supportHours}>
-            Support Hours: Monday - Friday, 9:00 AM - 5:00 PM EST
+        <View style={styles.contactSection}>
+          <Text style={styles.contactTitle}>Need More Help?</Text>
+          <Text style={styles.contactText}>
+            Our support team is always ready to assist you with any questions or concerns.
           </Text>
+          <TouchableOpacity
+            style={styles.contactButton}
+            onPress={handleContact}
+          >
+            <Icon name="mail" size={24} color="#fff" />
+            <Text style={styles.contactButtonText}>Contact Support</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -127,84 +121,98 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    padding: 16,
+  },
+  header: {
+    paddingTop: 40,
+    paddingBottom: 20,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  backText: {
-    color: '#2196F3',
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  title: {
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#fff',
+    marginLeft: 16,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
   },
   section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#2196F3',
-  },
-  tutorialCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
-  tutorialTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#333',
-  },
-  tutorialText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  contactCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  contactButton: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 12,
+    color: '#333',
+  },
+  sectionContent: {
+    paddingLeft: 8,
+  },
+  helpItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  helpText: {
+    fontSize: 16,
+    color: '#666',
+    marginLeft: 12,
+    flex: 1,
+  },
+  contactSection: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  contactTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 12,
   },
   contactText: {
-    marginLeft: 12,
     fontSize: 16,
-    color: '#2196F3',
-  },
-  supportHours: {
-    fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginTop: 12,
-    fontStyle: 'italic',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  contactButton: {
+    backgroundColor: '#2196F3',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    elevation: 2,
+  },
+  contactButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
 

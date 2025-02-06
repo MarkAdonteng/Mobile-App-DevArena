@@ -185,6 +185,11 @@ const QuizScreen = () => {
     }
   };
 
+  const handleStartQuiz = (lesson: Lesson) => {
+    setCurrentLesson(lesson);
+    setShowQuiz(true);
+  };
+
   const renderLessonCard = (lesson: Lesson) => (
     <TouchableOpacity
       key={lesson.id}
@@ -282,7 +287,7 @@ const QuizScreen = () => {
 
           {/* Lesson Modal */}
           <Modal
-            visible={currentLesson !== null}
+            visible={!!currentLesson}
             animationType="slide"
             onRequestClose={() => setCurrentLesson(null)}
           >
@@ -312,8 +317,7 @@ const QuizScreen = () => {
                   <TouchableOpacity
                     style={styles.startQuizButton}
                     onPress={() => {
-                      handleLessonComplete(currentLesson.id);
-                      setShowQuiz(true);
+                      handleStartQuiz(currentLesson);
                     }}
                   >
                     <Text style={styles.buttonText}>Start Quiz</Text>
@@ -323,11 +327,14 @@ const QuizScreen = () => {
             )}
           </Modal>
 
-          {/* Add QuizModal */}
-          {currentLesson && (
+          {/* Quiz Modal */}
+          {showQuiz && currentLesson && (
             <QuizModal
               visible={showQuiz}
-              onClose={() => setShowQuiz(false)}
+              onClose={() => {
+                setShowQuiz(false);
+                setCurrentLesson(null);
+              }}
               lessonId={currentLesson.id}
               onComplete={handleQuizComplete}
             />
