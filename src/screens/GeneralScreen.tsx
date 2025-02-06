@@ -42,11 +42,11 @@ const GeneralScreen = () => {
       action: () => navigation.navigate('Account'),
     },
     {
-      title: 'Multiple Languages',
-      description: 'Learn various programming languages',
-      icon: 'language',
+      title: 'Video Tutorials',
+      description: 'Watch and learn programming concepts',
+      icon: 'play-circle-filled',
       color: '#9C27B0',
-      action: () => navigation.navigate('Quiz'),
+      action: () => navigation.navigate('Videos'),
     },
   ];
 
@@ -64,7 +64,7 @@ const GeneralScreen = () => {
           style={styles.gradient}
         >
           <Text style={styles.welcomeText}>
-            Welcome back,{'\n'}
+            Welcome to AIT DevArena,{'\n'}
             <Text style={styles.userName}>{user?.fullName || 'Learner'}</Text>
           </Text>
           <View style={styles.statsContainer}>

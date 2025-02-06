@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Button,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import CodeEditor from '../common/CodeEditor';
@@ -1104,12 +1105,20 @@ const QuizModal: React.FC<Props> = ({ visible, onClose, lessonId, onComplete }) 
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={styles.button}
+              style={[
+                styles.finishButton,
+                isSubmitting && styles.finishButtonDisabled
+              ]}
               onPress={nextQuestion}
+              disabled={isSubmitting}
             >
-              <Text style={styles.buttonText}>
-                {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-              </Text>
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                <Text style={styles.finishButtonText}>
+                  {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                </Text>
+              )}
             </TouchableOpacity>
           )}
         </View>
@@ -1229,6 +1238,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  finishButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 25,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  finishButtonDisabled: {
+    opacity: 0.7,
+  },
+  finishButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

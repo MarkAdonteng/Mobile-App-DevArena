@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { auth } from './services/firebase';
+import { auth, fetchUserData } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useUser } from './contexts/UserContext';
+import { useUser } from './context/UserContext';
 
 function App() {
   const { setUser } = useUser();
@@ -23,7 +23,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setUser]);
 
   // ... rest of App component
 }

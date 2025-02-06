@@ -1,14 +1,20 @@
 import { StackNavigationProp } from '@react-navigation/stack';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+
+// Define the tab navigation param list
+export type TabParamList = {
+  General: undefined;
+  Quiz: undefined;
+  Videos: undefined;
+  Account: undefined;
+};
 
 export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   MainApp: undefined;
   Help: undefined;
-  Quiz: undefined;
-  Account: undefined;
-  General: undefined;
 };
 
 export type GameStackParamList = {
@@ -26,4 +32,8 @@ export type GameStackParamList = {
 export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export type GameScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-export type NavigationProp = NativeStackNavigationProp<RootStackParamList>; 
+// Create a composite navigation prop that combines stack and tab navigation
+export type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList>,
+  StackNavigationProp<RootStackParamList>
+>; 
