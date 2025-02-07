@@ -1,4 +1,4 @@
-export type ProgrammingLanguage = 'Python' | 'JavaScript' | 'Java' | 'C++' | 'React' | 'TypeScript';
+export type ProgrammingLanguage = 'Python' | 'JavaScript' | 'Java' | 'C++' | 'React' | 'TypeScript' | 'PHP' | 'Angular' | 'Laravel' | 'Django';
 
 export type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 

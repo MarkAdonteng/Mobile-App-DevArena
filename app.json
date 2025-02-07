@@ -1,35 +1,40 @@
 {
   "expo": {
-    "name": "AIT",
-    "slug": "AIT",
+    "name": "AIT DevArena",
+    "slug": "ait",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/hero.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/hero.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.infotechnexus.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/hero.png",
+        "backgroundColor": "#000000"
       },
-      "package": "com.infotechnexus.app"
+      "package": "com.infotechnexus.ait",
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/become.png"
     },
     "extra": {
       "eas": {
-        "projectId": "fc1c7da6-4949-43f7-ba69-7a148bfeaa24"
+        "projectId": "ea6469db-bc6d-496c-81eb-55c44da40976"
       }
-    }
+    },
+    "owner": "simply-mark"
   }
 }

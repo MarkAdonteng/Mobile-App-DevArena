@@ -176,9 +176,119 @@ function counter() {
     }
   ],
   Intermediate: [
-    // ... Add 5 intermediate lessons
+    {
+      id: 'js_intermediate_1',
+      title: 'ES6+ Features',
+      content: `Learn modern JavaScript features introduced in ES6+.
+
+Key Concepts:
+• Let, const, and var
+• Template literals
+• Destructuring
+• Default parameters
+• Spread and rest operators`,
+      codeExamples: [`
+// Let and Const
+let name = "Alice";
+const age = 25;
+
+// Template literals
+console.log(\`Hello, \${name}\`);
+
+// Destructuring
+let person = { name: "John", age: 30 };
+let { name, age } = person;`],
+      difficulty: 'Intermediate',
+      order: 6,
+    },
+    {
+      id: 'js_intermediate_2',
+      title: 'Asynchronous JavaScript',
+      content: `Understand how to handle asynchronous operations.
+
+Key Concepts:
+• Callbacks
+• Promises
+• Async/Await`,
+      codeExamples: [`
+// Promise example
+function fetchData() {
+  return new Promise(resolve => {
+    setTimeout(() => resolve("Data loaded"), 2000);
+  });
+}
+
+fetchData().then(console.log);`],
+      difficulty: 'Intermediate',
+      order: 7,
+    },
+    {
+      id: 'js_intermediate_3',
+      title: 'JavaScript DOM Manipulation',
+      content: `Learn how to interact with the Document Object Model (DOM).
+
+Key Concepts:
+• Selecting elements
+• Modifying elements
+• Event listeners
+• Adding/removing classes`,
+      codeExamples: [`
+// Select an element
+const heading = document.querySelector("h1");
+
+// Modify text
+heading.textContent = "New Title";
+
+// Add event listener
+heading.addEventListener("click", () => alert("Clicked!"));`],
+      difficulty: 'Intermediate',
+      order: 8,
+    },
   ],
   Advanced: [
-    // ... Add 5 advanced lessons
-  ],
+    {
+      id: 'js_advanced_1',
+      title: 'Object-Oriented JavaScript (OOP)',
+      content: `Learn OOP concepts in JavaScript.
+
+Key Concepts:
+• Classes and constructors
+• Prototypes
+• Inheritance`,
+      codeExamples: [`
+// Class example
+class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  greet() {
+    return \`Hello, my name is \${this.name}\`;
+  }
+}
+
+const john = new Person("John", 30);
+console.log(john.greet());`],
+      difficulty: 'Advanced',
+      order: 11,
+    },
+    {
+      id: 'js_advanced_2',
+      title: 'Functional Programming in JavaScript',
+      content: `Explore functional programming techniques.
+
+Key Concepts:
+• Higher-order functions
+• Pure functions
+• Currying`,
+      codeExamples: [`
+// Higher-order function
+const multiply = (a) => (b) => a * b;
+const double = multiply(2);
+console.log(double(5)); // 10`],
+      difficulty: 'Advanced',
+      order: 12,
+    }
+  ]
 };

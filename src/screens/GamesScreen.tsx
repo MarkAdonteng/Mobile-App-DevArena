@@ -44,6 +44,14 @@ const games = [
     color: '#3F51B5',
     component: 'Sudoku' as keyof GameStackParamList,
   },
+  // {
+  //   id: 'checkers',
+  //   name: 'Checkers',
+  //   description: 'Classic board game strategy',
+  //   icon: 'grid-on',
+  //   color: '#9C27B0',
+  //   component: 'Checkers' as keyof GameStackParamList,  // Changed from 'Chess' to 'Checkers'
+  // },
   {
     id: 'wordsearch',
     name: 'Word Search',

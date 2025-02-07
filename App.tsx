@@ -27,6 +27,7 @@ import TicTacToe from './src/components/games/TicTacToe';
 import KnapsackHunt from './src/components/games/KnapsackHunt';
 import DebugDetective from './src/components/games/DebugDetective';
 import CodeSnake from './src/components/games/CodeSnake';
+import Checkers from './src/components/games/Checkers';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -50,10 +51,10 @@ const GameStackNavigator = () => (
       options={{ title: 'Algorithm Battle' }}
     />
     <GameStack.Screen 
-      name="SortingChallenge" 
-      component={SortingChallenge}
+      name="Checkers" 
+      component={Checkers}
       options={{ 
-        title: 'Sorting Challenge',
+        title: 'Checkers',
         headerStyle: {
           backgroundColor: '#2196F3',
         },

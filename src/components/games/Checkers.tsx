@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 const BOARD_SIZE = width - 40;
@@ -24,11 +25,44 @@ type Position = {
   col: number;
 };
 
+type Stats = {
+  player1Wins: number;
+  player2Wins: number;
+  draws: number;
+};
+
 const Checkers = () => {
   const [board, setBoard] = useState<(Piece | null)[][]>(initializeBoard());
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
-  const [scores, setScores] = useState({ player1: 0, player2: 0 });
+  const [stats, setStats] = useState<Stats>({
+    player1Wins: 0,
+    player2Wins: 0,
+    draws: 0
+  });
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const savedStats = await AsyncStorage.getItem('checkersStats');
+      if (savedStats) {
+        setStats(JSON.parse(savedStats));
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
+
+  const saveStats = async (newStats: Stats) => {
+    try {
+      await AsyncStorage.setItem('checkersStats', JSON.stringify(newStats));
+    } catch (error) {
+      console.error('Error saving stats:', error);
+    }
+  };
 
   function initializeBoard(): (Piece | null)[][] {
     const board = Array(8).fill(null).map(() => Array(8).fill(null));
@@ -53,6 +87,44 @@ const Checkers = () => {
     
     return board;
   }
+
+  const handleWin = (winner: 1 | 2) => {
+    const newStats = {
+      ...stats,
+      [`player${winner}Wins`]: stats[`player${winner}Wins` as keyof Stats] + 1
+    };
+    setStats(newStats);
+    saveStats(newStats);
+    
+    Alert.alert(
+      'Game Over!',
+      `Player ${winner} wins! 🎉`,
+      [
+        {
+          text: 'New Game',
+          onPress: resetGame
+        }
+      ]
+    );
+  };
+
+  const checkWinner = () => {
+    let player1Pieces = 0;
+    let player2Pieces = 0;
+
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = board[row][col];
+        if (piece) {
+          if (piece.player === 1) player1Pieces++;
+          if (piece.player === 2) player2Pieces++;
+        }
+      }
+    }
+
+    if (player1Pieces === 0) handleWin(2);
+    if (player2Pieces === 0) handleWin(1);
+  };
 
   const handlePiecePress = (row: number, col: number) => {
     const piece = board[row][col];
@@ -121,31 +193,7 @@ const Checkers = () => {
     setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
 
     // Check for game over
-    checkGameOver(newBoard);
-  };
-
-  const checkGameOver = (currentBoard: (Piece | null)[][]) => {
-    let player1Pieces = 0;
-    let player2Pieces = 0;
-
-    currentBoard.forEach(row => {
-      row.forEach(cell => {
-        if (cell?.player === 1) player1Pieces++;
-        if (cell?.player === 2) player2Pieces++;
-      });
-    });
-
-    if (player1Pieces === 0) {
-      setScores(prev => ({ ...prev, player2: prev.player2 + 1 }));
-      Alert.alert('Game Over', 'Player 2 wins!', [
-        { text: 'New Game', onPress: resetGame }
-      ]);
-    } else if (player2Pieces === 0) {
-      setScores(prev => ({ ...prev, player1: prev.player1 + 1 }));
-      Alert.alert('Game Over', 'Player 1 wins!', [
-        { text: 'New Game', onPress: resetGame }
-      ]);
-    }
+    checkWinner();
   };
 
   const resetGame = () => {
@@ -191,19 +239,17 @@ const Checkers = () => {
         style={styles.header}
       >
         <Text style={styles.title}>Checkers</Text>
-        <Text style={styles.subtitle}>Make your move!</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Player 1 (Brown)</Text>
+            <Text style={styles.statValue}>{stats.player1Wins} wins</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Player 2 (Dark Red)</Text>
+            <Text style={styles.statValue}>{stats.player2Wins} wins</Text>
+          </View>
+        </View>
       </LinearGradient>
-
-      <View style={styles.scoreBoard}>
-        <View style={styles.scoreItem}>
-          <View style={[styles.scoreIndicator, styles.player1Piece]} />
-          <Text style={styles.scoreText}>Player 1: {scores.player1}</Text>
-        </View>
-        <View style={styles.scoreItem}>
-          <View style={[styles.scoreIndicator, styles.player2Piece]} />
-          <Text style={styles.scoreText}>Player 2: {scores.player2}</Text>
-        </View>
-      </View>
 
       <View style={styles.board}>
         {board.map((row, rowIndex) => (
@@ -240,31 +286,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#fff',
-    opacity: 0.8,
-  },
-  scoreBoard: {
+  statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 15,
-    backgroundColor: '#fff',
-    margin: 20,
-    borderRadius: 10,
-    elevation: 3,
+    width: '100%',
+    marginTop: 10,
   },
-  scoreItem: {
-    flexDirection: 'row',
+  statItem: {
     alignItems: 'center',
   },
-  scoreIndicator: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginRight: 10,
+  statLabel: {
+    color: '#fff',
+    fontSize: 14,
+    opacity: 0.8,
   },
-  scoreText: {
+  statValue: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -301,14 +338,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   player1Piece: {
-    backgroundColor: '#CD853F',
-    borderWidth: 2,
-    borderColor: '#DEB887',
-  },
-  player2Piece: {
     backgroundColor: '#8B4513',
     borderWidth: 2,
     borderColor: '#A0522D',
+  },
+  player2Piece: {
+    backgroundColor: '#8B0000',
+    borderWidth: 2,
+    borderColor: '#A52A2A',
   },
   selectedPiece: {
     borderColor: '#FFD700',
