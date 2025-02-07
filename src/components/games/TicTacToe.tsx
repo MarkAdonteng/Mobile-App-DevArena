@@ -5,296 +5,177 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Modal,
-  ScrollView,
   Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+
+const { width } = Dimensions.get('window');
+const CELL_SIZE = (width - 60) / 3;
 
 type Player = 'X' | 'O' | null;
 type Board = Player[];
-type Difficulty = 'easy' | 'medium' | 'hard';
 
 const TicTacToe = () => {
   const [board, setBoard] = useState<Board>(Array(9).fill(null));
-  const [isPlayerNext, setIsPlayerNext] = useState(true);
-  const [playerScore, setPlayerScore] = useState(0);
-  const [aiScore, setAiScore] = useState(0);
-  const [showTutorial, setShowTutorial] = useState(true);
-  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [gameOver, setGameOver] = useState(false);
+  const [isXNext, setIsXNext] = useState<boolean>(true);
+  const [scores, setScores] = useState({
+    X: 0,
+    O: 0,
+    ties: 0,
+  });
 
-  useEffect(() => {
-    if (!isPlayerNext && !gameOver) {
-      const timer = setTimeout(() => {
-        makeAiMove();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isPlayerNext, gameOver]);
-
-  const checkWinner = (currentBoard: Board): Player | 'draw' | null => {
+  const calculateWinner = (squares: Board): Player => {
     const lines = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
       [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
       [0, 4, 8], [2, 4, 6] // Diagonals
     ];
 
-    for (const [a, b, c] of lines) {
-      if (currentBoard[a] && 
-          currentBoard[a] === currentBoard[b] && 
-          currentBoard[a] === currentBoard[c]) {
-        return currentBoard[a];
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
       }
     }
-
-    if (currentBoard.every(cell => cell !== null)) {
-      return 'draw';
-    }
-
     return null;
   };
 
-  const handleCellPress = (index: number) => {
-    if (board[index] || !isPlayerNext || gameOver) return;
+  const handlePress = (index: number) => {
+    if (board[index] || calculateWinner(board)) return;
 
     const newBoard = [...board];
-    newBoard[index] = 'X';
+    newBoard[index] = isXNext ? 'X' : 'O';
     setBoard(newBoard);
-    setIsPlayerNext(false);
+    setIsXNext(!isXNext);
 
-    const winner = checkWinner(newBoard);
+    const winner = calculateWinner(newBoard);
     if (winner) {
-      handleGameEnd(winner);
-    }
-  };
-
-  const makeAiMove = () => {
-    if (gameOver) return;
-
-    let move: number;
-    switch (difficulty) {
-      case 'easy':
-        move = getRandomMove();
-        break;
-      case 'medium':
-        move = Math.random() < 0.7 ? getBestMove() : getRandomMove();
-        break;
-      case 'hard':
-        move = getBestMove();
-        break;
-      default:
-        move = getBestMove();
-    }
-
-    const newBoard = [...board];
-    newBoard[move] = 'O';
-    setBoard(newBoard);
-    setIsPlayerNext(true);
-
-    const winner = checkWinner(newBoard);
-    if (winner) {
-      handleGameEnd(winner);
-    }
-  };
-
-  const getRandomMove = (): number => {
-    const availableMoves = board
-      .map((cell, index) => cell === null ? index : null)
-      .filter((index): index is number => index !== null);
-    
-    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
-  };
-
-  const getBestMove = (): number => {
-    let bestScore = -Infinity;
-    let bestMove = 0;
-
-    for (let i = 0; i < board.length; i++) {
-      if (board[i] === null) {
-        board[i] = 'O';
-        const score = minimax(board, 0, false);
-        board[i] = null;
-
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = i;
-        }
-      }
-    }
-
-    return bestMove;
-  };
-
-  const minimax = (currentBoard: Board, depth: number, isMaximizing: boolean): number => {
-    const winner = checkWinner(currentBoard);
-    if (winner === 'O') return 10 - depth;
-    if (winner === 'X') return depth - 10;
-    if (winner === 'draw') return 0;
-
-    if (isMaximizing) {
-      let bestScore = -Infinity;
-      for (let i = 0; i < currentBoard.length; i++) {
-        if (currentBoard[i] === null) {
-          currentBoard[i] = 'O';
-          const score = minimax(currentBoard, depth + 1, false);
-          currentBoard[i] = null;
-          bestScore = Math.max(score, bestScore);
-        }
-      }
-      return bestScore;
-    } else {
-      let bestScore = Infinity;
-      for (let i = 0; i < currentBoard.length; i++) {
-        if (currentBoard[i] === null) {
-          currentBoard[i] = 'X';
-          const score = minimax(currentBoard, depth + 1, true);
-          currentBoard[i] = null;
-          bestScore = Math.min(score, bestScore);
-        }
-      }
-      return bestScore;
-    }
-  };
-
-  const handleGameEnd = (result: Player | 'draw') => {
-    setGameOver(true);
-    if (result === 'X') {
-      setPlayerScore(prev => prev + 1);
-      Alert.alert('Victory!', 'You won!', [{ text: 'Play Again', onPress: resetGame }]);
-    } else if (result === 'O') {
-      setAiScore(prev => prev + 1);
-      Alert.alert('Defeat!', 'AI won!', [{ text: 'Try Again', onPress: resetGame }]);
-    } else {
-      Alert.alert('Draw!', 'It\'s a tie!', [{ text: 'Play Again', onPress: resetGame }]);
+      setScores(prev => ({
+        ...prev,
+        [winner]: prev[winner] + 1
+      }));
+      Alert.alert(
+        'Game Over!',
+        `Player ${winner} wins!`,
+        [{ text: 'Play Again', onPress: resetGame }]
+      );
+    } else if (!newBoard.includes(null)) {
+      setScores(prev => ({
+        ...prev,
+        ties: prev.ties + 1
+      }));
+      Alert.alert(
+        'Game Over!',
+        "It's a tie!",
+        [{ text: 'Play Again', onPress: resetGame }]
+      );
     }
   };
 
   const resetGame = () => {
     setBoard(Array(9).fill(null));
-    setIsPlayerNext(true);
-    setGameOver(false);
+    setIsXNext(true);
   };
 
-  const Tutorial = () => (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={showTutorial}
-      onRequestClose={() => setShowTutorial(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.tutorialContainer}>
-          <Text style={styles.tutorialTitle}>How to Play Tic-Tac-Toe</Text>
-          
-          <ScrollView style={styles.tutorialContent}>
-            <View style={styles.tutorialSection}>
-              <Text style={styles.tutorialSubtitle}>Rules:</Text>
-              <Text style={styles.tutorialText}>
-                • You play as X, AI plays as O{'\n'}
-                • Take turns placing your marks{'\n'}
-                • Get three in a row to win{'\n'}
-                • Can be horizontal, vertical, or diagonal
-              </Text>
-            </View>
+  const resetScores = () => {
+    setScores({
+      X: 0,
+      O: 0,
+      ties: 0,
+    });
+  };
 
-            <View style={styles.tutorialSection}>
-              <Text style={styles.tutorialSubtitle}>Difficulty Levels:</Text>
-              <Text style={styles.tutorialText}>
-                • Easy: AI makes random moves{'\n'}
-                • Medium: AI sometimes makes mistakes{'\n'}
-                • Hard: AI is unbeatable
-              </Text>
-            </View>
+  const renderCell = (index: number) => {
+    const value = board[index];
+    const isWinningCell = calculateWinner(board) === value;
 
-            <View style={styles.tutorialSection}>
-              <Text style={styles.tutorialSubtitle}>Tips:</Text>
-              <Text style={styles.tutorialText}>
-                • Control the center{'\n'}
-                • Block your opponent{'\n'}
-                • Create multiple winning paths{'\n'}
-                • Watch out for diagonal traps
-              </Text>
-            </View>
-          </ScrollView>
-
-          <View style={styles.difficultyButtons}>
-            {(['easy', 'medium', 'hard'] as Difficulty[]).map((level) => (
-              <TouchableOpacity
-                key={level}
-                style={[
-                  styles.difficultyButton,
-                  difficulty === level && styles.selectedDifficulty
-                ]}
-                onPress={() => {
-                  setDifficulty(level);
-                  resetGame();
-                }}
-              >
-                <Text style={[
-                  styles.difficultyButtonText,
-                  difficulty === level && styles.selectedDifficultyText
-                ]}>
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity 
-            style={styles.tutorialButton}
-            onPress={() => setShowTutorial(false)}
+    return (
+      <TouchableOpacity
+        style={[
+          styles.cell,
+          isWinningCell && styles.winningCell
+        ]}
+        onPress={() => handlePress(index)}
+        activeOpacity={0.7}
+      >
+        {value && (
+          <Text 
+            style={[
+              styles.cellText,
+              { color: value === 'X' ? '#2196F3' : '#f44336' }
+            ]}
           >
-            <Text style={styles.tutorialButtonText}>Start Playing!</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
+            {value}
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Tutorial />
-      
-      <View style={styles.header}>
-        <View style={styles.scoreContainer}>
-          <Text style={styles.score}>Player (X): {playerScore}</Text>
-          <Text style={styles.score}>AI (O): {aiScore}</Text>
+      <LinearGradient
+        colors={['#1a237e', '#000']}
+        style={styles.header}
+      >
+        <Text style={styles.title}>Tic Tac Toe</Text>
+        <Text style={styles.subtitle}>
+          {calculateWinner(board) 
+            ? `Winner: Player ${calculateWinner(board)}`
+            : `Next Player: ${isXNext ? 'X' : 'O'}`}
+        </Text>
+      </LinearGradient>
+
+      {/* Score Board */}
+      <View style={styles.scoreBoard}>
+        <View style={styles.scoreItem}>
+          <Text style={[styles.scoreLabel, { color: '#2196F3' }]}>Player X</Text>
+          <Text style={styles.scoreNumber}>{scores.X}</Text>
         </View>
-        <TouchableOpacity 
-          style={styles.helpButton}
-          onPress={() => setShowTutorial(true)}
-        >
-          <Icon name="help" size={24} color="#666" />
-        </TouchableOpacity>
+        <View style={styles.scoreItem}>
+          <Text style={styles.scoreLabel}>Ties</Text>
+          <Text style={styles.scoreNumber}>{scores.ties}</Text>
+        </View>
+        <View style={styles.scoreItem}>
+          <Text style={[styles.scoreLabel, { color: '#f44336' }]}>Player O</Text>
+          <Text style={styles.scoreNumber}>{scores.O}</Text>
+        </View>
       </View>
 
       <View style={styles.board}>
-        {board.map((cell, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.cell}
-            onPress={() => handleCellPress(index)}
-          >
-            {cell && (
-              <Text style={[
-                styles.cellText,
-                cell === 'X' ? styles.playerText : styles.aiText
-              ]}>
-                {cell}
-              </Text>
-            )}
-          </TouchableOpacity>
-        ))}
+        <View style={styles.row}>
+          {renderCell(0)}
+          {renderCell(1)}
+          {renderCell(2)}
+        </View>
+        <View style={styles.row}>
+          {renderCell(3)}
+          {renderCell(4)}
+          {renderCell(5)}
+        </View>
+        <View style={styles.row}>
+          {renderCell(6)}
+          {renderCell(7)}
+          {renderCell(8)}
+        </View>
       </View>
 
-      <TouchableOpacity 
-        style={styles.resetButton}
-        onPress={resetGame}
-      >
-        <Icon name="refresh" size={24} color="#fff" />
-        <Text style={styles.resetButtonText}>New Game</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={resetGame}
+        >
+          <Text style={styles.buttonText}>New Game</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.resetScoresButton}
+          onPress={resetScores}
+        >
+          <Text style={styles.buttonText}>Reset Scores</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -303,137 +184,102 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    padding: 20,
     alignItems: 'center',
-    marginBottom: 32,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  scoreContainer: {
-    flex: 1,
-  },
-  score: {
-    fontSize: 18,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 8,
   },
-  helpButton: {
-    padding: 8,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
+  subtitle: {
+    fontSize: 16,
+    color: '#fff',
+    opacity: 0.8,
+  },
+  scoreBoard: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 15,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    marginHorizontal: 20,
+    marginTop: -20,
+    borderRadius: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  scoreItem: {
+    alignItems: 'center',
+  },
+  scoreLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  scoreNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1a237e',
   },
   board: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     justifyContent: 'center',
-    aspectRatio: 1,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 8,
-    elevation: 4,
+    padding: 20,
+    marginTop: 20,
+  },
+  row: {
+    flexDirection: 'row',
   },
   cell: {
-    width: '33%',
-    aspectRatio: 1,
-    justifyContent: 'center',
+    width: CELL_SIZE,
+    height: CELL_SIZE,
+    borderWidth: 2,
+    borderColor: '#1a237e',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    justifyContent: 'center',
+    margin: 2,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   cellText: {
     fontSize: 48,
     fontWeight: 'bold',
   },
-  playerText: {
-    color: '#2196F3',
+  winningCell: {
+    backgroundColor: '#E3F2FD',
   },
-  aiText: {
-    color: '#F44336',
-  },
-  resetButton: {
-    flexDirection: 'row',
-    backgroundColor: '#4CAF50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 32,
-  },
-  resetButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  buttonContainer: {
     padding: 20,
-  },
-  tutorialContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    maxHeight: '80%',
-  },
-  tutorialTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#2196F3',
-  },
-  tutorialContent: {
-    maxHeight: '60%',
-  },
-  tutorialSection: {
-    marginBottom: 16,
-  },
-  tutorialSubtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-  },
-  tutorialText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#666',
-  },
-  difficultyButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 16,
   },
-  difficultyButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#f0f0f0',
-  },
-  selectedDifficulty: {
-    backgroundColor: '#2196F3',
-  },
-  difficultyButtonText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  selectedDifficultyText: {
-    color: '#fff',
-  },
-  tutorialButton: {
-    backgroundColor: '#2196F3',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 16,
+  resetButton: {
+    backgroundColor: '#1a237e',
+    padding: 15,
+    borderRadius: 25,
+    width: '45%',
     alignItems: 'center',
   },
-  tutorialButtonText: {
+  resetScoresButton: {
+    backgroundColor: '#f44336',
+    padding: 15,
+    borderRadius: 25,
+    width: '45%',
+    alignItems: 'center',
+  },
+  buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

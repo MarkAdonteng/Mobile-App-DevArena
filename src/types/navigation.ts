@@ -5,6 +5,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 // Define the tab navigation param list
 export type TabParamList = {
   General: undefined;
+  Games: undefined;
   Quiz: undefined;
   Videos: undefined;
   Account: undefined;
@@ -19,18 +20,21 @@ export type RootStackParamList = {
 
 export type GameStackParamList = {
   GamesList: undefined;
-  CodeRunner: undefined;
-  AlgorithmBattle: undefined;
+  TicTacToe: undefined;
   RockPaperScissors: undefined;
+  Checkers: undefined;
   Sudoku: undefined;
   WordSearch: undefined;
-  TicTacToe: undefined;
-  DebugDetective: undefined;
-  CodeSnake: undefined;
+  CodeRunner: undefined;
+  KnapsackHunt: undefined;
 };
 
+export type GameScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'Games'>,
+  StackNavigationProp<GameStackParamList>
+>;
+
 export type AuthScreenNavigationProp = StackNavigationProp<RootStackParamList>;
-export type GameScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 // Create a composite navigation prop that combines stack and tab navigation
 export type NavigationProp = CompositeNavigationProp<

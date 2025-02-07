@@ -620,6 +620,84 @@ ptr->show();`,
     },
     // Add more quizzes for other lessons...
   ],
+  'cpp_inter_4': [
+    {
+      "id": "q1",
+      "question": "What will this code output?",
+      "code": `
+#include <iostream>
+using namespace std;
+
+class Point {
+public:
+    int x, y;
+    Point(int a, int b) : x(a), y(b) {}
+
+    Point operator+(const Point& p) {
+        return Point(x + p.x, y + p.y);
+    }
+};
+
+int main() {
+    Point p1(3, 4), p2(1, 2);
+    Point p3 = p1 + p2;
+    cout << p3.x << ", " << p3.y;
+    return 0;
+}
+`,
+      "options": ["3, 4", "1, 2", "4, 6", "Error"],
+      "correctAnswer": 2,
+      "explanation": "The overloaded + operator adds corresponding x and y values, resulting in (4, 6)."
+    },
+    {
+      "id": "q2",
+      "question": "Which keyword is used to declare operator overloading in C++?",
+      "options": ["overload", "operator", "op", "function"],
+      "correctAnswer": 1,
+      "explanation": "The 'operator' keyword is used to define overloaded operators in C++."
+    },
+    {
+      "id": "q3",
+      "question": "Which operator cannot be overloaded in C++?",
+      "options": ["+", "=", "->", "?: (ternary operator)"],
+      "correctAnswer": 3,
+      "explanation": "The ternary operator (?:) cannot be overloaded in C++."
+    }
+],
+'cpp_inter_5': [
+    {
+      "id": "q1",
+      "question": "Which header file is required for smart pointers in C++?",
+      "options": ["<memory>", "<smart>", "<pointer>", "<iostream>"],
+      "correctAnswer": 0,
+      "explanation": "The <memory> header is required to use smart pointers like unique_ptr and shared_ptr."
+    },
+    {
+      "id": "q2",
+      "question": "What will this code output?",
+      "code": `
+#include <iostream>
+#include <memory>
+using namespace std;
+
+int main() {
+    unique_ptr<int> ptr = make_unique<int>(10);
+    cout << *ptr;
+    return 0;
+}
+`,
+      "options": ["10", "Address of ptr", "Null", "Error"],
+      "correctAnswer": 0,
+      "explanation": "The unique_ptr holds an integer with value 10, and *ptr dereferences it to print 10."
+    },
+    {
+      "id": "q3",
+      "question": "Which smart pointer allows multiple references to the same object?",
+      "options": ["unique_ptr", "shared_ptr", "weak_ptr", "raw pointer"],
+      "correctAnswer": 1,
+      "explanation": "shared_ptr allows multiple references and uses reference counting to manage memory."
+    }
+],
   'cpp_adv_2': [
     {
       id: 'q1',
@@ -752,6 +830,100 @@ if(x > 3) {
     },
     // ... add more quizzes for cpp_basics_2
   ],
+  'cpp_basics_3': [
+    {
+      "id": "q1",
+      "question": "What will this code output?",
+      "code": `
+#include <iostream>
+using namespace std;
+
+int main() {
+    int arr[] = {1, 2, 3, 4};
+    cout << arr[2];
+    return 0;
+}
+`,
+      "options": ["1", "2", "3", "4"],
+      "correctAnswer": 2,
+      "explanation": "Arrays in C++ are zero-indexed, so arr[2] refers to the third element, which is 3."
+    },
+    {
+      "id": "q2",
+      "question": "Which header file is needed to use C++ strings?",
+      "options": ["<string>", "<cstring>", "<iostream>", "<cstdlib>"],
+      "correctAnswer": 0,
+      "explanation": "The <string> header is required for using the string class in C++."
+    },
+    {
+      "id": "q3",
+      "question": "What will this code output?",
+      "code": `
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string str = "Hello";
+    str += " World";
+    cout << str;
+    return 0;
+}
+`,
+      "options": ["Hello", "World", "Hello World", "Error"],
+      "correctAnswer": 2,
+      "explanation": "Using the += operator concatenates 'World' to 'Hello', resulting in 'Hello World'."
+    }
+],
+'cpp_basics_4': [
+    {
+      "id": "q1",
+      "question": "What does this code output?",
+      "code": `
+#include <iostream>
+using namespace std;
+
+int main() {
+    int x = 10;
+    int* ptr = &x;
+    cout << *ptr;
+    return 0;
+}
+`,
+      "options": ["x", "Address of x", "10", "Error"],
+      "correctAnswer": 2,
+      "explanation": "The * operator dereferences the pointer, giving the value stored at x, which is 10."
+    },
+    {
+      "id": "q2",
+      "question": "What symbol is used to declare a pointer in C++?",
+      "options": ["&", "*", "->", "%"],
+      "correctAnswer": 1,
+      "explanation": "The * symbol is used to declare a pointer in C++."
+    },
+    {
+      "id": "q3",
+      "question": "What does this code output?",
+      "code": `
+#include <iostream>
+using namespace std;
+
+void update(int &n) {
+    n = 20;
+}
+
+int main() {
+    int x = 10;
+    update(x);
+    cout << x;
+    return 0;
+}
+`,
+      "options": ["10", "20", "Error", "Undefined"],
+      "correctAnswer": 1,
+      "explanation": "The function modifies 'x' via a reference parameter, updating its value to 20."
+    }
+],
   // ... add quizzes for other C++ lessons
   'react_basics_1': [
     {

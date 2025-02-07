@@ -3,215 +3,113 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
-  useWindowDimensions,
-  Animated,
+  Image,
+  Dimensions,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { GameStackParamList } from '../types/navigation';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-// Define the navigation param list
-type RootStackParamList = {
-  SortingChallenge: undefined;
-  PathfindingMaze: undefined;
-  NumberGuessing: undefined;
-  TowerOfHanoi: undefined;
-  SortingRace: undefined;
-  Sudoku: undefined;
-  WordSearch: undefined;
-  TicTacToe: undefined;
-  KnapsackHunt: undefined;
-  BinaryTree: undefined;
-  RockPaperScissors: undefined;
-  CodeRunner: undefined;
-  AlgorithmBattle: undefined;
-  DebugDetective: undefined;
-  CodeSnake: undefined;
-};
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - 48) / 2;
 
-type GameScreenNavigationProp = NavigationProp<GameStackParamList>;
+type GameNavigationProp = StackNavigationProp<GameStackParamList>;
 
-type GameItem = {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  route: keyof GameStackParamList;
-  backgroundColor: string;
-  iconColor: string;
-};
-
-const games: GameItem[] = [
+const games = [
   {
-    id: '1',
-    title: 'Code Runner',
-    description: 'Write and execute code to solve programming challenges',
-    icon: 'code',
-    difficulty: 'Medium',
-    route: 'CodeRunner',
-    backgroundColor: '#9C27B0',
-    iconColor: '#6A1B9A',
+    id: 'tictactoe',
+    name: 'Tic Tac Toe',
+    description: 'Classic game vs Player or AI',
+    icon: 'grid-3x3',
+    color: '#2196F3',
+    component: 'TicTacToe' as keyof GameStackParamList,
   },
   {
-    id: '2',
-    title: 'Algorithm Battle',
-    description: 'Race against time to implement efficient algorithms',
-    icon: 'speed',
-    difficulty: 'Hard',
-    route: 'AlgorithmBattle',
-    backgroundColor: '#F44336',
-    iconColor: '#C62828',
+    id: 'rps',
+    name: 'Rock Paper Scissors',
+    description: 'Test your luck!',
+    icon: 'sports-esports',
+    color: '#4CAF50',
+    component: 'RockPaperScissors' as keyof GameStackParamList,
   },
   {
-    id: '3',
-    title: 'Rock Paper Scissors',
-    description: 'Challenge the AI in a classic game with a learning twist',
-    icon: 'back-hand',
-    difficulty: 'Easy',
-    route: 'RockPaperScissors',
-    backgroundColor: '#4CAF50',
-    iconColor: '#2E7D32',
-  },
-  {
-    id: '4',
-    title: 'Sudoku Solver',
-    description: 'Play Sudoku with algorithmic hints',
+    id: 'sudoku',
+    name: 'Sudoku',
+    description: 'Number placement puzzle',
     icon: 'grid-on',
-    difficulty: 'Hard',
-    route: 'Sudoku',
-    backgroundColor: '#3F51B5',
-    iconColor: '#283593',
+    color: '#3F51B5',
+    component: 'Sudoku' as keyof GameStackParamList,
   },
   {
-    id: '5',
-    title: 'Word Search',
-    description: 'Find words while competing with AI solver',
+    id: 'wordsearch',
+    name: 'Word Search',
+    description: 'Find hidden words',
     icon: 'search',
-    difficulty: 'Medium',
-    route: 'WordSearch',
-    backgroundColor: '#009688',
-    iconColor: '#00695C',
+    color: '#009688',
+    component: 'WordSearch' as keyof GameStackParamList,
   },
   {
-    id: '6',
-    title: 'AI Tic-Tac-Toe',
-    description: 'Challenge Minimax AI in Tic-Tac-Toe',
-    icon: 'close',
-    difficulty: 'Easy',
-    route: 'TicTacToe',
-    backgroundColor: '#FF5722',
-    iconColor: '#D84315',
-  },
-  {
-    id: '7',
-    title: 'Debug Detective',
-    description: 'Solve coding mysteries and fix buggy code',
-    icon: 'bug-report',
-    difficulty: 'Medium',
-    route: 'DebugDetective',
-    backgroundColor: '#2196F3',
-    iconColor: '#1565C0',
-  },
-  {
-    id: '8',
-    title: 'Code Snake',
-    description: 'Learn programming concepts while playing Snake',
+    id: 'coderunner',
+    name: 'Code Runner',
+    description: 'Write and run code',
     icon: 'code',
-    difficulty: 'Medium',
-    route: 'CodeSnake',
-    backgroundColor: '#4CAF50',
-    iconColor: '#2E7D32',
+    color: '#FF5722',
+    component: 'CodeRunner' as keyof GameStackParamList,
+  },
+  {
+    id: 'knapsack',
+    name: 'Knapsack Hunt',
+    description: 'Solve the puzzle',
+    icon: 'backpack',
+    color: '#FF9800',
+    component: 'KnapsackHunt' as keyof GameStackParamList,
   },
 ];
 
-const GameCard = React.memo(({ 
-  item, 
-  index, 
-  cardWidth, 
-  onPress 
-}: { 
-  item: GameItem; 
-  index: number; 
-  cardWidth: number;
-  onPress: () => void;
-}) => {
-  const translateY = React.useRef(new Animated.Value(50)).current;
-
-  React.useEffect(() => {
-    Animated.timing(translateY, {
-      toValue: 0,
-      duration: 500,
-      delay: index * 100,
-      useNativeDriver: true,
-    }).start();
-  }, [index]);
-
-  return (
-    <Animated.View
-      style={[
-        styles.gameCard,
-        {
-          width: cardWidth,
-          transform: [{ translateY }],
-          backgroundColor: item.backgroundColor,
-        },
-      ]}
-    >
-      <TouchableOpacity
-        onPress={onPress}
-        style={styles.cardContent}
-      >
-        <View style={[styles.iconContainer, { backgroundColor: item.iconColor }]}>
-          <Icon name={item.icon} size={32} color="#fff" />
-        </View>
-        <Text style={styles.gameTitle}>{item.title}</Text>
-        <Text style={styles.gameDescription}>{item.description}</Text>
-        <View style={styles.difficultyBadge}>
-          <Text style={styles.difficultyText}>{item.difficulty}</Text>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-});
-
 const GamesScreen = () => {
-  const { width } = useWindowDimensions();
-  const navigation = useNavigation<GameScreenNavigationProp>();
-  const fadeAnim = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const renderGameCard = ({ item, index }: { item: GameItem; index: number }) => {
-    const cardWidth = (width - 48) / 2;
-    return (
-      <GameCard
-        item={item}
-        index={index}
-        cardWidth={cardWidth}
-        onPress={() => navigation.navigate(item.route)}
-      />
-    );
-  };
+  const navigation = useNavigation<GameNavigationProp>();
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={games}
-        renderItem={renderGameCard}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
+      <LinearGradient
+        colors={['#1a237e', '#000']}
+        style={styles.header}
+      >
+        <Text style={styles.title}>Game Arena</Text>
+        <Text style={styles.subtitle}>Challenge yourself with our collection of games</Text>
+      </LinearGradient>
+
+      <ScrollView 
+        style={styles.content}
         showsVerticalScrollIndicator={false}
-      />
+      >
+        <View style={styles.gamesGrid}>
+          {games.map((game) => (
+            <TouchableOpacity
+              key={game.id}
+              style={styles.gameCard}
+              onPress={() => navigation.navigate(game.component)}
+            >
+              <LinearGradient
+                colors={[game.color, `${game.color}99`]}
+                style={styles.cardGradient}
+              >
+                <Icon name={game.icon} size={40} color="#FFF" />
+                <Text style={styles.gameName}>{game.name}</Text>
+                <Text style={styles.gameDescription}>{game.description}</Text>
+                
+                <View style={styles.playButton}>
+                  <Icon name="play-arrow" size={24} color="#FFF" />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -221,56 +119,72 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  listContainer: {
-    padding: 16,
-    gap: 16,
+  header: {
+    padding: 20,
+    paddingTop: 60,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  gameCard: {
-    borderRadius: 16,
-    margin: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    overflow: 'hidden',
-  },
-  cardContent: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  gameTitle: {
-    fontSize: 16,
+  title: {
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
-    textAlign: 'center',
     marginBottom: 8,
   },
-  gameDescription: {
-    fontSize: 12,
+  subtitle: {
+    fontSize: 16,
     color: '#fff',
-    textAlign: 'center',
     opacity: 0.8,
-    marginBottom: 12,
   },
-  difficultyBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
+  content: {
+    flex: 1,
+    padding: 16,
   },
-  difficultyText: {
+  gamesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+  },
+  gameCard: {
+    width: CARD_WIDTH,
+    height: CARD_WIDTH * 1.2,
+    marginBottom: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  cardGradient: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'space-between',
+  },
+  gameName: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+    marginTop: 12,
+  },
+  gameDescription: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.8,
+    marginTop: 4,
+  },
+  playButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
