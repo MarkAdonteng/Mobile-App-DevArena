@@ -85,8 +85,8 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>AIT</Text>
-              <Text style={styles.appName}>DevArena</Text>
+              <Text style={styles.logoText}>EduPlay</Text>
+              {/* <Text style={styles.appName}>DevArena</Text> */}
               <Text style={styles.subtitle}>Join the Developer Community</Text>
             </View>
 

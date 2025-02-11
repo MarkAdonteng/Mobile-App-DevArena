@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,17 +7,53 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProp } from '../types/navigation';
 import { useUser } from '../context/UserContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
+
+// Daily challenge interface
+interface DailyChallenge {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  points: number;
+  explanation: string;
+}
+
+const dailyChallenges: DailyChallenge[] = [
+  {
+    id: '1',
+    question: 'What is the time complexity of a binary search?',
+    options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
+    correctAnswer: 1,
+    points: 10,
+    explanation: 'Binary search has a time complexity of O(log n) as it divides the search space in half with each iteration.'
+  },
+  {
+    id: '2',
+    question: 'Which data structure uses LIFO?',
+    options: ['Queue', 'Stack', 'Tree', 'Graph'],
+    correctAnswer: 1,
+    points: 10,
+    explanation: 'A Stack uses Last-In-First-Out (LIFO) principle where the last element added is the first one to be removed.'
+  },
+  // Add more daily challenges here
+];
 
 const GeneralScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const { width } = useWindowDimensions();
+  const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
+  const [hasCompletedDaily, setHasCompletedDaily] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);
 
   const features = [
     {
@@ -50,6 +86,108 @@ const GeneralScreen = () => {
     },
   ];
 
+  useEffect(() => {
+    if (user) {
+      checkDailyChallenge();
+      selectDailyChallenge();
+    }
+  }, [user]);
+
+  const selectDailyChallenge = () => {
+    const today = new Date().toDateString();
+    const challengeIndex = Math.floor(
+      new Date(today).getTime() / (1000 * 60 * 60 * 24)
+    ) % dailyChallenges.length;
+    setDailyChallenge(dailyChallenges[challengeIndex]);
+  };
+
+  const checkDailyChallenge = async () => {
+    if (!user) return;
+    
+    const today = new Date().toDateString();
+    const dailyRef = doc(db, 'users', user.uid, 'dailyChallenges', today);
+    const dailyDoc = await getDoc(dailyRef);
+    setHasCompletedDaily(dailyDoc.exists());
+  };
+
+  const handleDailyChallenge = async (selectedAnswer: number) => {
+    if (!dailyChallenge || !user) return;
+
+    const today = new Date().toDateString();
+    const dailyRef = doc(db, 'users', user.uid, 'dailyChallenges', today);
+    const userRef = doc(db, 'users', user.uid);
+    const userData = await getDoc(userRef);
+    const currentPoints = userData.data()?.rewards?.points || 0;
+
+    if (selectedAnswer === dailyChallenge.correctAnswer) {
+      // Add 20 points for correct answer
+      const newPoints = currentPoints + 20;
+      
+      await setDoc(dailyRef, {
+        completed: true,
+        timestamp: new Date().toISOString(),
+      });
+
+      await setDoc(userRef, {
+        ...userData.data(),
+        rewards: {
+          ...userData.data()?.rewards,
+          points: newPoints,
+        },
+      }, { merge: true });
+
+      Alert.alert(
+        'Correct! 🎉',
+        `${dailyChallenge.explanation}\n\nYou earned 20 points!\nTotal Points: ${newPoints}`,
+        [{ text: 'OK' }]
+      );
+      setHasCompletedDaily(true);
+    } else {
+      // Subtract 30 points for wrong answer
+      const newPoints = Math.max(0, currentPoints - 30); // Prevent negative points
+      
+      await setDoc(userRef, {
+        ...userData.data(),
+        rewards: {
+          ...userData.data()?.rewards,
+          points: newPoints,
+        },
+      }, { merge: true });
+
+      Alert.alert(
+        'Incorrect ❌',
+        `${dailyChallenge.explanation}\n\nYou lost 30 points!\nTotal Points: ${newPoints}`,
+        [{ text: 'Try Again' }]
+      );
+    }
+
+    // Refresh user data to update points display
+    const freshUserData = await getDoc(userRef);
+    if (user && freshUserData.exists()) {
+      const updatedUser = {
+        ...user,
+        rewards: {
+          ...user.rewards,
+          points: freshUserData.data()?.rewards?.points || 0,
+        },
+      };
+      // Update user context
+      setUser(updatedUser);
+    }
+  };
+
+  const handleShowChallenge = () => {
+    if (!hasCompletedDaily) {
+      setShowChallenge(true);
+    } else {
+      Alert.alert(
+        'Challenge Completed',
+        'You have already completed today\'s challenge. Come back tomorrow for a new one!',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Welcome Section */}
@@ -64,7 +202,7 @@ const GeneralScreen = () => {
           style={styles.gradient}
         >
           <Text style={styles.welcomeText}>
-            Welcome to AIT DevArena,{'\n'}
+            Welcome to EduPlay,{'\n'}
             <Text style={styles.userName}>{user?.fullName || 'Learner'}</Text>
           </Text>
           <View style={styles.statsContainer}>
@@ -86,6 +224,61 @@ const GeneralScreen = () => {
           </View>
         </LinearGradient>
       </ImageBackground>
+
+      {/* Daily Challenge Card */}
+      <TouchableOpacity 
+        style={styles.challengeCard}
+        onPress={handleShowChallenge}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={['#1a237e', '#3949ab']}
+          style={styles.challengeGradient}
+        >
+          <View style={styles.challengeHeader}>
+            <Icon name="emoji-events" size={32} color="#FFD700" />
+            <View style={styles.challengeHeaderText}>
+              <Text style={styles.challengeCardTitle}>Daily Challenge</Text>
+              <Text style={styles.challengeCardSubtitle}>
+                {hasCompletedDaily ? 'Completed for today!' : 'New challenge available!'}
+              </Text>
+            </View>
+            {hasCompletedDaily && (
+              <Icon name="check-circle" size={24} color="#4CAF50" />
+            )}
+          </View>
+          <Text style={styles.challengeCardPoints}>
+            {!hasCompletedDaily && `Earn ${dailyChallenge?.points || 0} points!`}
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* Challenge Modal */}
+      {showChallenge && dailyChallenge && !hasCompletedDaily && (
+        <View style={styles.challengeContainer}>
+          <View style={styles.challengeModalHeader}>
+            <Text style={styles.challengeTitle}>Daily Challenge 🎯</Text>
+            <TouchableOpacity 
+              onPress={() => setShowChallenge(false)}
+              style={styles.closeButton}
+            >
+              <Icon name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.challengeQuestion}>{dailyChallenge.question}</Text>
+          <View style={styles.optionsContainer}>
+            {dailyChallenge.options.map((option, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.optionButton}
+                onPress={() => handleDailyChallenge(index)}
+              >
+                <Text style={styles.optionText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Features Grid */}
       <View style={styles.featuresContainer}>
@@ -222,6 +415,80 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+  challengeCard: {
+    margin: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+  },
+  challengeGradient: {
+    padding: 16,
+  },
+  challengeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  challengeHeaderText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  challengeCardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  challengeCardSubtitle: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.8,
+  },
+  challengeCardPoints: {
+    fontSize: 16,
+    color: '#FFD700',
+    marginTop: 8,
+    fontWeight: 'bold',
+  },
+  challengeContainer: {
+    backgroundColor: '#fff',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    elevation: 4,
+  },
+  challengeModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  challengeTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a237e',
+  },
+  challengeQuestion: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 16,
+    lineHeight: 24,
+  },
+  optionsContainer: {
+    gap: 8,
+  },
+  optionButton: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  optionText: {
+    fontSize: 14,
+    color: '#333',
   },
 });
 

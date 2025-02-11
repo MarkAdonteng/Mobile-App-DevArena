@@ -78,8 +78,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>AIT</Text>
-            <Text style={styles.appName}>DevArena</Text>
+            <Text style={styles.logoText}>EduPlay</Text>
+            {/* <Text style={styles.appName}>DevArena</Text> */}
             <Text style={styles.subtitle}>Where Code Meets Excellence</Text>
           </View>
 
@@ -139,7 +139,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               onPress={() => navigation.navigate('Signup')}
             >
               <Text style={styles.signupText}>
-                New to DevArena? <Text style={styles.signupTextBold}>Create Account</Text>
+                New to EduPlay? <Text style={styles.signupTextBold}>Create Account</Text>
               </Text>
             </TouchableOpacity>
           </View>
