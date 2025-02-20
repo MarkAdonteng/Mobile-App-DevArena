@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AIT DevArena",
-    "slug": "ait",
+    "name": "Edu Play",
+    "slug": "edu-play",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/hero.png",
@@ -32,9 +32,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "ea6469db-bc6d-496c-81eb-55c44da40976"
+        "projectId": "50587fe0-bf64-49e1-91bc-c27e5d245398"
       }
     },
-    "owner": "simply-mark"
+    "owner": "isaacobengz"
   }
 }
