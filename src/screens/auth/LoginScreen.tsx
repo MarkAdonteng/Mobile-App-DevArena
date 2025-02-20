@@ -16,6 +16,8 @@ import { useUser } from '../../context/UserContext';
 import { signIn } from '../../services/firebase';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../types/navigation';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +25,7 @@ type Props = {
   navigation: AuthScreenNavigationProp;
 };
 
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const LoginScreen: React.FC<Props & { navigation: StackNavigationProp<RootStackParamList, 'Login'> }> = ({ navigation }) => {
   const { setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

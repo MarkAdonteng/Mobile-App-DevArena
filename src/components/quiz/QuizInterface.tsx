@@ -8,12 +8,12 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { QuizQuestion, ProgrammingLanguage, DifficultyLevel } from '../../types/quiz';
+import { QuizQuestion, ProgrammingLanguage, Difficulty } from '../../types/quiz';
 import { fetchQuizQuestions } from '../../services/quizApi';
 
 interface Props {
   language: ProgrammingLanguage;
-  difficulty: DifficultyLevel;
+  difficulty: Difficulty;
   onComplete: (score: number) => void;
   onBack: () => void;
 }
