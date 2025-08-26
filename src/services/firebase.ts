@@ -9,13 +9,13 @@ import {
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDLO6LxCZnYRY0ZZGwQZocEQPIr7GFiShs",
-  authDomain: "infotechnexus-47b53.firebaseapp.com",
-  projectId: "infotechnexus-47b53",
-  storageBucket: "infotechnexus-47b53.firebasestorage.app",
-  messagingSenderId: "70691322233",
-  appId: "1:70691322233:web:61c491e839e3c94eb497a8",
-  measurementId: "G-KF3Z6X8VPF"
+  apiKey: "AIzaSyAxIYviNtpuznfHCKsWypX2XZw15fTU4Fk",
+  authDomain: "mobileait-e4cd5.firebaseapp.com",
+  projectId: "mobileait-e4cd5",
+  storageBucket: "mobileait-e4cd5.firebasestorage.app",
+  messagingSenderId: "1029323796154",
+  appId: "1:1029323796154:web:9863fd4c2aa7d926671c83",
+  measurementId: "G-W9GMZ4LKHY"
 };
 
 // Initialize Firebase

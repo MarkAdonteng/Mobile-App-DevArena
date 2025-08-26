@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AIT DevArena",
-    "slug": "ait",
+    "name": "Edu-play",
+    "slug": "eduplay",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/hero.png",
