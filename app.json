@@ -30,11 +30,11 @@
     "web": {
       "favicon": "./assets/become.png"
     },
+    "owner": "isaacobengz",
     "extra": {
       "eas": {
-        "projectId": "ea6469db-bc6d-496c-81eb-55c44da40976"
+        "projectId": "37fee4e8-a90e-45f7-86e5-cccbabb4c4c9"
       }
-    },
-    "owner": "simply-mark"
+    }
   }
 }

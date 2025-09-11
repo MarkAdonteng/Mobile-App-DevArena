@@ -10,9 +10,6 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@firebase/analytics": "^0.10.11",
-    "@firebase/auth": "^1.8.2",
-    "@firebase/firestore": "^4.7.6",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-firebase/analytics": "^21.7.0",
     "@react-native-firebase/app": "^21.7.0",
@@ -35,12 +32,12 @@
     "react-native-share": "^12.0.3",
     "react-native-svg": "15.11.2",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "react-native-gesture-handler": "~2.24.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
-    "@types/react-native": "^0.72.8",
     "@types/react-native-vector-icons": "^6.4.18",
     "typescript": "~5.8.3"
   },
