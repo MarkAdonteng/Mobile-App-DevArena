@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   ImageBackground,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -33,7 +34,7 @@ const dailyChallenges: DailyChallenge[] = [
     question: 'What is the time complexity of a binary search?',
     options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
     correctAnswer: 1,
-    points: 10,
+    points: 15,
     explanation: 'Binary search has a time complexity of O(log n) as it divides the search space in half with each iteration.'
   },
   {
@@ -41,10 +42,49 @@ const dailyChallenges: DailyChallenge[] = [
     question: 'Which data structure uses LIFO?',
     options: ['Queue', 'Stack', 'Tree', 'Graph'],
     correctAnswer: 1,
-    points: 10,
+    points: 15,
     explanation: 'A Stack uses Last-In-First-Out (LIFO) principle where the last element added is the first one to be removed.'
   },
-  // Add more daily challenges here
+  {
+    id: '3',
+    question: 'What does CSS stand for?',
+    options: ['Computer Style Sheets', 'Cascading Style Sheets', 'Creative Style Sheets', 'Colorful Style Sheets'],
+    correctAnswer: 1,
+    points: 15,
+    explanation: 'CSS stands for Cascading Style Sheets, which is used to style and layout web pages.'
+  },
+  {
+    id: '4',
+    question: 'Which of the following is NOT a JavaScript data type?',
+    options: ['String', 'Boolean', 'Float', 'Object'],
+    correctAnswer: 2,
+    points: 15,
+    explanation: 'JavaScript uses "number" for all numeric values, not separate "float" and "integer" types.'
+  },
+  {
+    id: '5',
+    question: 'What is the purpose of the "git clone" command?',
+    options: ['Create a new branch', 'Copy a repository', 'Delete a repository', 'Merge branches'],
+    correctAnswer: 1,
+    points: 15,
+    explanation: 'The "git clone" command creates a local copy of a remote repository on your machine.'
+  },
+  {
+    id: '6',
+    question: 'In React, what is JSX?',
+    options: ['A database', 'A syntax extension', 'A testing framework', 'A state manager'],
+    correctAnswer: 1,
+    points: 15,
+    explanation: 'JSX is a syntax extension for JavaScript that allows you to write HTML-like code in React components.'
+  },
+  {
+    id: '7',
+    question: 'What does API stand for?',
+    options: ['Application Programming Interface', 'Advanced Programming Interface', 'Automated Programming Interface', 'Application Process Interface'],
+    correctAnswer: 0,
+    points: 15,
+    explanation: 'API stands for Application Programming Interface, which allows different software applications to communicate.'
+  }
 ];
 
 const GeneralScreen = () => {
@@ -54,6 +94,7 @@ const GeneralScreen = () => {
   const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
   const [hasCompletedDaily, setHasCompletedDaily] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const features = [
     {
@@ -102,77 +143,132 @@ const GeneralScreen = () => {
   };
 
   const checkDailyChallenge = async () => {
-    if (!user) return;
+    if (!user?.uid) return;
     
-    const today = new Date().toDateString();
-    const dailyRef = doc(db, 'users', user.uid, 'dailyChallenges', today);
-    const dailyDoc = await getDoc(dailyRef);
-    setHasCompletedDaily(dailyDoc.exists());
+    try {
+      const today = new Date().toDateString();
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (userDoc.exists()) {
+        const dailyChallenges = userDoc.data()?.dailyChallenges || {};
+        setHasCompletedDaily(!!dailyChallenges[today]?.completed);
+      } else {
+        setHasCompletedDaily(false);
+      }
+    } catch (error) {
+      console.error('Error checking daily challenge:', error);
+      setHasCompletedDaily(false);
+    }
   };
 
   const handleDailyChallenge = async (selectedAnswer: number) => {
-    if (!dailyChallenge || !user) return;
+    if (!dailyChallenge || !user || isProcessing) return;
 
-    const today = new Date().toDateString();
-    const dailyRef = doc(db, 'users', user.uid, 'dailyChallenges', today);
-    const userRef = doc(db, 'users', user.uid);
-    const userData = await getDoc(userRef);
-    const currentPoints = userData.data()?.rewards?.points || 0;
-
-    if (selectedAnswer === dailyChallenge.correctAnswer) {
-      // Add 20 points for correct answer
-      const newPoints = currentPoints + 20;
-      
-      await setDoc(dailyRef, {
-        completed: true,
-        timestamp: new Date().toISOString(),
-      });
-
-      await setDoc(userRef, {
-        ...userData.data(),
-        rewards: {
-          ...userData.data()?.rewards,
-          points: newPoints,
-        },
-      }, { merge: true });
-
+    // Check if user is properly authenticated
+    if (!user.uid) {
       Alert.alert(
-        'Correct! 🎉',
-        `${dailyChallenge.explanation}\n\nYou earned 20 points!\nTotal Points: ${newPoints}`,
+        'Authentication Error',
+        'Please log in again to complete the daily challenge.',
         [{ text: 'OK' }]
       );
-      setHasCompletedDaily(true);
-    } else {
-      // Subtract 30 points for wrong answer
-      const newPoints = Math.max(0, currentPoints - 30); // Prevent negative points
-      
-      await setDoc(userRef, {
-        ...userData.data(),
-        rewards: {
-          ...userData.data()?.rewards,
-          points: newPoints,
-        },
-      }, { merge: true });
-
-      Alert.alert(
-        'Incorrect ❌',
-        `${dailyChallenge.explanation}\n\nYou lost 30 points!\nTotal Points: ${newPoints}`,
-        [{ text: 'Try Again' }]
-      );
+      return;
     }
 
-    // Refresh user data to update points display
-    const freshUserData = await getDoc(userRef);
-    if (user && freshUserData.exists()) {
-      const updatedUser = {
-        ...user,
-        rewards: {
-          ...user.rewards,
-          points: freshUserData.data()?.rewards?.points || 0,
-        },
-      };
-      // Update user context
-      setUser(updatedUser);
+    setIsProcessing(true);
+
+    try {
+      const today = new Date().toDateString();
+      const userRef = doc(db, 'users', user.uid);
+      
+      // Check if user document exists first
+      const userData = await getDoc(userRef);
+      if (!userData.exists()) {
+        throw new Error('User data not found. Please try logging in again.');
+      }
+      
+      const currentPoints = userData.data()?.rewards?.points || 0;
+
+      if (selectedAnswer === dailyChallenge.correctAnswer) {
+        // Add challenge points for correct answer
+        const newPoints = currentPoints + dailyChallenge.points;
+        
+        // Store daily challenge completion in user document instead of subcollection
+        const dailyChallenges = userData.data()?.dailyChallenges || {};
+        dailyChallenges[today] = {
+          completed: true,
+          timestamp: new Date().toISOString(),
+          correct: true,
+          pointsEarned: dailyChallenge.points
+        };
+
+        await setDoc(userRef, {
+          ...userData.data(),
+          dailyChallenges,
+          rewards: {
+            ...userData.data()?.rewards,
+            points: newPoints,
+          },
+        }, { merge: true });
+
+        Alert.alert(
+          'Correct! 🎉',
+          `${dailyChallenge.explanation}\n\nYou earned ${dailyChallenge.points} points!\nTotal Points: ${newPoints}`,
+          [{ text: 'Awesome!', onPress: () => setShowChallenge(false) }]
+        );
+        setHasCompletedDaily(true);
+      } else {
+        // Subtract 10 points for wrong answer (reduced penalty)
+        const newPoints = Math.max(0, currentPoints - 10); // Prevent negative points
+        
+        // Store daily challenge completion in user document instead of subcollection
+        const dailyChallenges = userData.data()?.dailyChallenges || {};
+        dailyChallenges[today] = {
+          completed: true,
+          timestamp: new Date().toISOString(),
+          correct: false,
+          pointsLost: 10
+        };
+        
+        await setDoc(userRef, {
+          ...userData.data(),
+          dailyChallenges,
+          rewards: {
+            ...userData.data()?.rewards,
+            points: newPoints,
+          },
+        }, { merge: true });
+
+        Alert.alert(
+          'Incorrect ❌',
+          `${dailyChallenge.explanation}\n\nYou lost 10 points!\nTotal Points: ${newPoints}`,
+          [{ text: 'Try Again Tomorrow', onPress: () => setShowChallenge(false) }]
+        );
+        setHasCompletedDaily(true);
+      }
+
+      // Refresh user data to update points display
+      const freshUserData = await getDoc(userRef);
+      if (user && freshUserData.exists()) {
+        const updatedUser = {
+          ...user,
+          rewards: {
+            ...user.rewards,
+            points: freshUserData.data()?.rewards?.points || 0,
+          },
+        };
+        // Update user context
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error processing daily challenge:', error);
+      Alert.alert(
+        'Error',
+        'Something went wrong. Please try again later.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -248,7 +344,7 @@ const GeneralScreen = () => {
             )}
           </View>
           <Text style={styles.challengeCardPoints}>
-            {!hasCompletedDaily && `Earn ${dailyChallenge?.points || 0} points!`}
+            {!hasCompletedDaily && `Earn ${dailyChallenge?.points || 15} points!`}
           </Text>
         </LinearGradient>
       </TouchableOpacity>
@@ -261,19 +357,35 @@ const GeneralScreen = () => {
             <TouchableOpacity 
               onPress={() => setShowChallenge(false)}
               style={styles.closeButton}
+              disabled={isProcessing}
             >
-              <Icon name="close" size={24} color="#666" />
+              <Icon name="close" size={24} color={isProcessing ? "#ccc" : "#666"} />
             </TouchableOpacity>
           </View>
           <Text style={styles.challengeQuestion}>{dailyChallenge.question}</Text>
+          
+          {isProcessing && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#1a237e" />
+              <Text style={styles.loadingText}>Processing your answer...</Text>
+            </View>
+          )}
+          
           <View style={styles.optionsContainer}>
             {dailyChallenge.options.map((option, index) => (
               <TouchableOpacity
                 key={index}
-                style={styles.optionButton}
+                style={[
+                  styles.optionButton,
+                  isProcessing && styles.optionButtonDisabled
+                ]}
                 onPress={() => handleDailyChallenge(index)}
+                disabled={isProcessing}
               >
-                <Text style={styles.optionText}>{option}</Text>
+                <Text style={[
+                  styles.optionText,
+                  isProcessing && styles.optionTextDisabled
+                ]}>{option}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -490,6 +602,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 16,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#1a237e',
+    fontWeight: '500',
+  },
+  optionButtonDisabled: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#e0e0e0',
+    opacity: 0.6,
+  },
+  optionTextDisabled: {
+    color: '#999',
+  },
 });
 
-export default GeneralScreen; 
+export default GeneralScreen;
